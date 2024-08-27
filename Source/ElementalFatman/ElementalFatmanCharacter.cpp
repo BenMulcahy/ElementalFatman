@@ -10,6 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "HeatInteractable.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -22,6 +23,7 @@ AElementalFatmanCharacter::AElementalFatmanCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 		
 	// Create a CameraComponent	
+	// CreateDefaultSubobject creates the component on a blueprint before the game even runs
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
@@ -60,6 +62,10 @@ void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Look);
+	
+		EnhancedInputComponent->BindAction(HeatAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Heat);
+
+		EnhancedInputComponent->BindAction(ColdAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Cold);
 	}
 	else
 	{
@@ -91,5 +97,47 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void AElementalFatmanCharacter::Heat(const FInputActionValue& Value) 
+{
+	// check collision or range 
+	bool Heating = Value.Get<bool>();
+	if (Heating) 
+	{
+		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("heating")));
+		
+		// check if youre looking at something based on range
+		FHitResult hit;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+
+		FVector startPos = FirstPersonCameraComponent->GetForwardVector();
+		FVector endPos = FirstPersonCameraComponent->GetForwardVector() * AbilityRange;
+
+		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false, 3.5f);
+
+		if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params)) 
+		{
+			if (Cast<AHeatInteractable>(hit.GetActor())) 
+			{
+				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("obj found")));
+			}
+		}
+		// check if object is an interactable Cast<HeatInteractable>??
+
+	}
+}
+
+void AElementalFatmanCharacter::Cold(const FInputActionValue& Value)
+{
+	// check collision or range 
+	bool Cooling = Value.Get<bool>();
+	UE_LOG(LogTemp, Warning, TEXT("Cooling State: %s"), Cooling ? TEXT("True") : TEXT("False"));
+	if (Cooling)
+	{
+
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("cooling")));
 	}
 }

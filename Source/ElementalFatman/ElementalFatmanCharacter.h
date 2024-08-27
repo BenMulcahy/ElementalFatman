@@ -22,7 +22,7 @@ class AElementalFatmanCharacter : public ACharacter
 	GENERATED_BODY()
 
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Mesh, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Mesh | Character", meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
 
 	/** First person camera */
@@ -37,11 +37,24 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 	
+	/** Heat Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* HeatAction;
+
+	/** Cold Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ColdAction;
+
+
 public:
 	AElementalFatmanCharacter();
 
 protected:
 	virtual void BeginPlay();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AbilityRange = 300;
+
 
 public:
 		
@@ -55,6 +68,10 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void Heat(const FInputActionValue& Value);
+
+	void Cold(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
