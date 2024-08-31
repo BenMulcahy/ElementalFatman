@@ -10,7 +10,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
-#include "HeatInteractable.h"
+#include "ElementalFatmanGameMode.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -106,27 +106,8 @@ void AElementalFatmanCharacter::Heat(const FInputActionValue& Value)
 	bool Heating = Value.Get<bool>();
 	if (Heating) 
 	{
+		CurrentInteraction = EInteractionType::IT_Heating;
 		//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("heating")));
-		
-		// check if youre looking at something based on range
-		FHitResult hit;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-
-		FVector startPos = FirstPersonCameraComponent->GetForwardVector();
-		FVector endPos = FirstPersonCameraComponent->GetForwardVector() * AbilityRange;
-
-		DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false, 3.5f);
-
-		if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params)) 
-		{
-			if (Cast<AHeatInteractable>(hit.GetActor())) 
-			{
-				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, FString::Printf(TEXT("obj found")));
-			}
-		}
-		// check if object is an interactable Cast<HeatInteractable>??
-
 	}
 }
 
@@ -139,5 +120,57 @@ void AElementalFatmanCharacter::Cold(const FInputActionValue& Value)
 	{
 
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("cooling")));
+	}
+}
+
+void AElementalFatmanCharacter::Interacting(EInteractionType interaction)
+{
+	switch (interaction)
+	{
+	case EInteractionType::null:
+		break;
+	case EInteractionType::IT_Heating:
+		break;
+	case EInteractionType::IT_Cooling:
+		break;
+	default:
+		break;
+	}
+}
+
+void AElementalFatmanCharacter::CheckHitInteractables() 
+{
+	// check if youre looking at something based on ability range
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	FVector startPos = FirstPersonCameraComponent->GetComponentLocation();
+	FVector dir = FirstPersonCameraComponent->GetForwardVector();
+	FVector endPos = startPos + (dir * AbilityRange);
+
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
+
+	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
+	{
+		AElementalFatmanGameMode* currentGameMode = CastChecked<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
+
+		AHeatInteractable* hitActor = CastChecked<AHeatInteractable>(hit.GetActor());
+
+		// check if object is an interactable Cast<HeatInteractable>??
+		//for (AActor* interactable : currentGameMode->GetSceneInteractables())
+		//{
+		//	if (CastChecked<AHeatInteractable>(hit.GetActor()))
+		//}
+
+		if (hitActor)
+		{
+			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("obj found")));
+			hitActor->SetInteractedState(true);
+			hitActor->ChangeColor(FColor::Red);
+		}
+
+		//CastChecked<AHeatInteractable>(hit.GetActor())->ChangeColour();
+
 	}
 }

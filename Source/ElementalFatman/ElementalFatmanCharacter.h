@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "HeatInteractable.h"
 #include "ElementalFatmanCharacter.generated.h"
 
 class UInputComponent;
@@ -15,6 +16,14 @@ class UInputMappingContext;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+
+UENUM()
+enum class EInteractionType : uint8
+{
+	null UMETA(DisplayName = "No Interaction"),
+	IT_Heating UMETA(DisplayName = "Heating Interaction"),
+	IT_Cooling UMETA(DisplayName = "Cooling Interaction"),
+};
 
 UCLASS(config=Game)
 class AElementalFatmanCharacter : public ACharacter
@@ -45,6 +54,10 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* ColdAction;
 
+	UPROPERTY(VisibleAnywhere)
+	EInteractionType CurrentInteraction;
+
+
 
 public:
 	AElementalFatmanCharacter();
@@ -52,7 +65,7 @@ public:
 protected:
 	virtual void BeginPlay();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	float AbilityRange = 300;
 
 
@@ -72,6 +85,10 @@ protected:
 	void Heat(const FInputActionValue& Value);
 
 	void Cold(const FInputActionValue& Value);
+
+	void Interacting(EInteractionType interaction);
+
+	void CheckHitInteractables();
 
 protected:
 	// APawn interface

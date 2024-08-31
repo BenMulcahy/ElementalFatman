@@ -13,6 +13,17 @@ class AElementalFatmanGameMode : public AGameModeBase
 
 public:
 	AElementalFatmanGameMode();
+	TArray<AActor*> GetSceneInteractables() const { return SceneInteractables; }
+	void SetSceneInteractables(TArray<AActor*> interactables) { SceneInteractables = interactables; }
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	TArray<AActor*> FindSceneInteractables();
+
+protected:
+	TArray<AActor*> SceneInteractables;
+
 };
 
 
