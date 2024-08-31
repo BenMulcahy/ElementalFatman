@@ -46,17 +46,12 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 	
-	/** Heat Input Action */
+	/** Interact(Heat/Cool) Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* HeatAction;
-
-	/** Cold Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ColdAction;
+	UInputAction* InteractAction;
 
 	UPROPERTY(VisibleAnywhere)
 	EInteractionType CurrentInteraction;
-
 
 
 public:
@@ -68,12 +63,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	float AbilityRange = 300;
 
-
 public:
 		
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class AElementalFatmanGameMode> CustomGameModeInstance = nullptr;
 
 protected:
 	/** Called for movement input */
@@ -82,13 +79,15 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	void Heat(const FInputActionValue& Value);
+	void Interact(const FInputActionValue& Value);
+	void CancelInteract(const FInputActionValue& Value);
 
-	void Cold(const FInputActionValue& Value);
+	void UpdateInteraction(EInteractionType interaction);
 
-	void Interacting(EInteractionType interaction);
+	void UpdateHitInteractable(bool heating);
 
-	void CheckHitInteractables();
+	void ResetAllInteractables();
+
 
 protected:
 	// APawn interface

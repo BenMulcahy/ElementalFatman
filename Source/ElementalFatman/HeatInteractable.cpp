@@ -7,7 +7,7 @@
 AHeatInteractable::AHeatInteractable()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 // Called when the game starts or when spawned
@@ -30,13 +30,5 @@ void AHeatInteractable::ChangeColor(FColor color)
 {
 	DynamicMat->SetVectorParameterValue("TestColour", color);
 	Mesh->SetMaterial(0, DynamicMat);
-}
-
-
-// Called every frame
-void AHeatInteractable::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	ChangeColor(FColor::Blue);
 }
 
