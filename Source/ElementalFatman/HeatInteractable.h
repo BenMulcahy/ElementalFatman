@@ -19,17 +19,20 @@ public:
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
 	void UpdateColor();
 
-	int32 AttemptInteraction(bool heating);
+	int32 AttemptInteraction(bool heating, int32 currentPlayerPips);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 InteractablePipState = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	int32 CurrentInteractablePips = 2;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	int32 MaxInteractablePips = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	int32 PipsPerInteract = 1;
 
 	void SetupInstancedMaterial();
 

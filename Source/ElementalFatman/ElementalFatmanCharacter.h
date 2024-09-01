@@ -112,8 +112,6 @@ protected:
 
 	void UpdateHitInteractable();
 
-	void ResetAllInteractables();
-
 
 protected:
 	// APawn interface

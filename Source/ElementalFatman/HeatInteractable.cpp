@@ -32,31 +32,40 @@ void AHeatInteractable::SetupInstancedMaterial()
 void AHeatInteractable::UpdateColor()
 {
 	if (!IsValid(DynamicMat)) { UE_LOG(LogTemp, Error, TEXT("Woopsie! No Dynamic matieral here lmao")); return; }
-	DynamicMat->SetVectorParameterValue("TestColour", InteractablePipState == 0 ? FColor::Blue : InteractablePipState == MaxInteractablePips ? FColor::Red : FColor::White);
+	DynamicMat->SetVectorParameterValue("TestColour", CurrentInteractablePips == 0 ? FColor::Blue : CurrentInteractablePips == MaxInteractablePips ? FColor::Red : FColor::White);
 }
 
-int32 AHeatInteractable::AttemptInteraction(bool heating) 
+int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPips) 
 {
 	int32 playerNewPip = 0;
 
-	if (InteractablePipState < MaxInteractablePips && heating) 
+	if (heating && CurrentInteractablePips < MaxInteractablePips) 
 	{
-		InteractablePipState++;
-		UE_LOG(LogInteraction, Warning, TEXT("interactable new pipstate: %d"), InteractablePipState);
-		playerNewPip = -1;
+		if (currentPlayerPips >= PipsPerInteract) 
+		{
+			//TODO: Fix this -> doesnt work with pipsPerInteract properly
+			CurrentInteractablePips++;
+			UE_LOG(LogInteraction, Warning, TEXT("interactable new pipstate: %d"), CurrentInteractablePips);
+			playerNewPip = CurrentInteractablePips < PipsPerInteract ? -CurrentInteractablePips : -PipsPerInteract;
+		}
+		else 
+		{
+			// ui for not enough pips
+			UE_LOG(LogInteraction, Warning, TEXT("you don't have enough pips to heat this object!"), CurrentInteractablePips);
+		}
 	}
-	else if (InteractablePipState > 0 && !heating)
+	else if (!heating && CurrentInteractablePips > 0)
 	{
-		InteractablePipState--;
-		UE_LOG(LogInteraction, Warning, TEXT("interactable new pipstate: %d"), InteractablePipState);
-		playerNewPip = 1;
+		CurrentInteractablePips--;
+		UE_LOG(LogInteraction, Warning, TEXT("interactable new pipstate: %d"), CurrentInteractablePips);
+		playerNewPip = CurrentInteractablePips < PipsPerInteract ? CurrentInteractablePips : PipsPerInteract;
 	}
 	else 
 	{ 
-		UE_LOG(LogInteraction, Warning, TEXT("no pips to spend!")); 
+		UE_LOG(LogInteraction, Warning, TEXT("can't get any hotter  or maybe colder!!!!")); 
 	}
 
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Magenta, FString::Printf(TEXT("%d"), InteractablePipState));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Magenta, FString::Printf(TEXT("%d"), CurrentInteractablePips));
 	
 	UpdateColor();
 	return playerNewPip;

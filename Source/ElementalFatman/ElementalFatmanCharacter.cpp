@@ -135,19 +135,17 @@ void AElementalFatmanCharacter::CancelInteract(const FInputActionValue& Value)
 void AElementalFatmanCharacter::UpdateInteraction(EInteractionType interaction)
 {
 	CurrentInteraction = interaction;
-	
-	// reset everything first
-	ResetAllInteractables();
 
 	// switch through interaction cases, update any interactables you're hitting
 	switch (interaction)
 	{
 	case EInteractionType::null:
-		UE_LOG(LogPlayer, Log, TEXT("InteractCancelled"));
+		UE_LOG(LogPlayer, Log, TEXT("Interact cancelled"));
+		// when player cancels input, clear the interaction timer
 		GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
  		break;
 	case EInteractionType::IT_Heating:
-		if (PlayerPips > 0) CheckHitInteractable(true);
+		CheckHitInteractable(true);
 		break;
 	case EInteractionType::IT_Cooling:
 		CheckHitInteractable(false);
@@ -198,18 +196,10 @@ void AElementalFatmanCharacter::UpdateHitInteractable()
 	GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
 
 	// successfully heat or cool the object and spend or gain a heat pip
-	int32 pipDiff = HitActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false);
+	int32 pipDiff = HitActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, PlayerPips);
 	PlayerPips += pipDiff;
 	PlayerPips = FMath::Clamp(PlayerPips, 0, MaxPlayerPips);
 }
 
-void AElementalFatmanCharacter::ResetAllInteractables()
-{
-	for (AActor* actor : CustomGameModeInstance->GetSceneInteractables())
-	{
-		AHeatInteractable* interactable = Cast<AHeatInteractable>(actor);
-		interactable->SetInteractedState(false);
-	}
-}
 #pragma endregion
 
