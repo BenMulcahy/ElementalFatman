@@ -15,23 +15,21 @@ public:
 	// Sets default values for this actor's properties
 	AHeatInteractable();
 
-	UMeshComponent* Mesh;
-	UMaterialInstanceDynamic* DynamicMat;
-	void ChangeColor(FColor color);
+	UMeshComponent* Mesh = nullptr;
+	UMaterialInstanceDynamic* DynamicMat = nullptr;
+	void UpdateColor();
 
-	bool GetInteractedState() const { return InteractedWith; }
-
-	void SetInteractedState(bool interactedWith) { this->InteractedWith = interactedWith; }
+	int32 AttemptInteraction(bool heating);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
-	int8 PipState = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 InteractablePipState = 2;
 
-	UPROPERTY(EditAnywhere)
-	bool InteractedWith;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 MaxInteractablePips = 3;
 
 	void SetupInstancedMaterial();
 

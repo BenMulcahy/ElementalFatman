@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "ElementalFatman.h"
 #include "Engine/LocalPlayer.h"
 #include "ElementalFatmanGameMode.h"
 
@@ -45,6 +46,7 @@ void AElementalFatmanCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 	CustomGameModeInstance = CastChecked<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
+	if (!IsValid(CustomGameModeInstance)) UE_LOG(LogPlayer, Error, TEXT("No Custom gamemode found!"));
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -106,7 +108,7 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 // set interaction enum value
 void AElementalFatmanCharacter::Interact(const FInputActionValue& Value) 
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("heat: %f, cool: %f"), Value.Get<FVector2D>().X, Value.Get<FVector2D>().Y));
+	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("heat: %f, cool: %f"), Value.Get<FVector2D>().X, Value.Get<FVector2D>().Y));
 
 	if (Value.Get<FVector2D>().X > 0 && Value.Get<FVector2D>().Y == 0)
 	{
@@ -121,7 +123,7 @@ void AElementalFatmanCharacter::Interact(const FInputActionValue& Value)
 		UpdateInteraction(CurrentInteraction);
 	}
 
-	if (GEngine && CurrentInteraction != EInteractionType::null) GEngine->AddOnScreenDebugMessage(-1, 0.01f, CurrentInteraction == EInteractionType::IT_Heating ? FColor::Red : FColor::Blue, FString::Printf(TEXT("%s"), CurrentInteraction == EInteractionType::IT_Heating ? TEXT("Heating") : TEXT("Cooling")));
+	//if (GEngine && CurrentInteraction != EInteractionType::null) GEngine->AddOnScreenDebugMessage(-1, 0.01f, CurrentInteraction == EInteractionType::IT_Heating ? FColor::Red : FColor::Blue, FString::Printf(TEXT("%s"), CurrentInteraction == EInteractionType::IT_Heating ? TEXT("Heating") : TEXT("Cooling")));
 }
 
 // set interaction enum value
@@ -141,20 +143,21 @@ void AElementalFatmanCharacter::UpdateInteraction(EInteractionType interaction)
 	switch (interaction)
 	{
 	case EInteractionType::null:
-		UE_LOG(LogPlayerManagement, Log, TEXT("InteractCancelled"));
+		UE_LOG(LogPlayer, Log, TEXT("InteractCancelled"));
+		GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
  		break;
 	case EInteractionType::IT_Heating:
-		UpdateHitInteractable(true);
+		if (PlayerPips > 0) CheckHitInteractable(true);
 		break;
 	case EInteractionType::IT_Cooling:
-		UpdateHitInteractable(false);
+		CheckHitInteractable(false);
 		break;
 	default:
 		break;
 	}
 }
 
-void AElementalFatmanCharacter::UpdateHitInteractable(bool heating) 
+void AElementalFatmanCharacter::CheckHitInteractable(bool heating) 
 {
 	// linetrace parameters
 	FHitResult hit;
@@ -165,18 +168,39 @@ void AElementalFatmanCharacter::UpdateHitInteractable(bool heating)
 	FVector dir = FirstPersonCameraComponent->GetForwardVector();
 	FVector endPos = startPos + (dir * AbilityRange);
 
-	//DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
 
 	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
-	{		
+	{	
+		if (!IsValid(hit.GetActor())) return;
 		// find a heatinteractable actor, set its interacted state & change its mesh color depending on whether heating or cooling
-		if (AHeatInteractable* hitActor = Cast<AHeatInteractable>(hit.GetActor()))
+		HitActor = Cast<AHeatInteractable>(hit.GetActor());
+		if (HitActor)
 		{
-			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("interactable found")));
-			hitActor->SetInteractedState(true);
-			hitActor->ChangeColor(heating ? FColor::Red : FColor::Blue);
+			//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("interactable found")));
+
+			// update after timer based on heat/cool charge times			
+			if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
+			{
+				GetWorld()->GetTimerManager().SetTimer(InteractChargeHandler, this, &AElementalFatmanCharacter::UpdateHitInteractable, heating ? HeatChargeTime : CoolChargeTime, false);
+				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Black, FString::Printf(TEXT("started timer")));
+				UE_LOG(LogPlayer, Warning, TEXT("started timer"));
+			}
 		}
 	}
+}
+
+void AElementalFatmanCharacter::UpdateHitInteractable() 
+{
+	UE_LOG(LogPlayer, Warning, TEXT("completed timer"));
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Black, FString::Printf(TEXT("completed timer")));
+
+	GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
+
+	// successfully heat or cool the object and spend or gain a heat pip
+	int32 pipDiff = HitActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false);
+	PlayerPips += pipDiff;
+	PlayerPips = FMath::Clamp(PlayerPips, 0, MaxPlayerPips);
 }
 
 void AElementalFatmanCharacter::ResetAllInteractables()
@@ -184,7 +208,6 @@ void AElementalFatmanCharacter::ResetAllInteractables()
 	for (AActor* actor : CustomGameModeInstance->GetSceneInteractables())
 	{
 		AHeatInteractable* interactable = Cast<AHeatInteractable>(actor);
-		interactable->ChangeColor(FColor::Purple);
 		interactable->SetInteractedState(false);
 	}
 }

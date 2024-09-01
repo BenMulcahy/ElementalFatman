@@ -60,8 +60,26 @@ public:
 protected:
 	virtual void BeginPlay();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
 	float AbilityRange = 300;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
+	float HeatChargeTime = 1.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
+	float CoolChargeTime = 1.5f;
+
+	// 1 player pip is actually 1/2 a pip (e.g. hearts)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
+	int32 PlayerPips = 2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
+	int32 MaxPlayerPips = 4;
+
+	FTimerHandle InteractChargeHandler;
+
+	AHeatInteractable* HitActor;
+
 
 public:
 		
@@ -71,6 +89,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class AElementalFatmanGameMode> CustomGameModeInstance = nullptr;
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetPlayerPips() const { return PlayerPips; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetMaxPlayerPips() const { return MaxPlayerPips; }
 
 protected:
 	/** Called for movement input */
@@ -84,7 +108,9 @@ protected:
 
 	void UpdateInteraction(EInteractionType interaction);
 
-	void UpdateHitInteractable(bool heating);
+	void CheckHitInteractable(bool heating);
+
+	void UpdateHitInteractable();
 
 	void ResetAllInteractables();
 

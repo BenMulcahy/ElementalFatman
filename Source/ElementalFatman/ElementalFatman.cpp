@@ -4,3 +4,6 @@
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ElementalFatman, "ElementalFatman" );
+
+DEFINE_LOG_CATEGORY(LogInteraction);
+DEFINE_LOG_CATEGORY(LogPlayer);
