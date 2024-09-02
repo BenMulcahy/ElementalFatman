@@ -213,9 +213,8 @@ void AElementalFatmanCharacter::CompleteInteraction()
 	GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
 
 	// attempt to heat/cool the actor and lose/gain a pip
-	int32 pipDiff = FocusedActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, PlayerPips);
-	PlayerPips += pipDiff;
-	PlayerPips = FMath::Clamp(PlayerPips, 0, MaxPlayerPips);
+	int32 pipDiff = FocusedActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, CurrentPlayerPips, MaxPlayerPips);
+	CurrentPlayerPips += pipDiff;
 }
 
 #pragma endregion

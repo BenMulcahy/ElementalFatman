@@ -66,9 +66,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
 	float AbilityChargeTime = 1.5f;
 
-	// 1 player pip is actually 1/2 a pip (e.g. hearts)
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
-	int32 PlayerPips = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
+	int32 CurrentPlayerPips = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MaxPlayerPips = 4;
@@ -89,7 +88,7 @@ public:
 	TObjectPtr<class AElementalFatmanGameMode> CustomGameModeInstance = nullptr;
 
 	UFUNCTION(BlueprintCallable)
-	int32 GetPlayerPips() const { return PlayerPips; }
+	int32 GetPlayerPips() const { return CurrentPlayerPips; }
 
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxPlayerPips() const { return MaxPlayerPips; }
