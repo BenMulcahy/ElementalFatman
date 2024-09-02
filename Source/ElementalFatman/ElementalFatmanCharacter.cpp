@@ -145,17 +145,17 @@ void AElementalFatmanCharacter::UpdateInteraction(EInteractionType interaction)
 		GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
  		break;
 	case EInteractionType::IT_Heating:
-		CheckHitInteractable(true);
+		CheckIfHittingInteractable();
 		break;
 	case EInteractionType::IT_Cooling:
-		CheckHitInteractable(false);
+		CheckIfHittingInteractable();
 		break;
 	default:
 		break;
 	}
 }
 
-void AElementalFatmanCharacter::CheckHitInteractable(bool heating) 
+void AElementalFatmanCharacter::CheckIfHittingInteractable() 
 {
 	// linetrace parameters
 	FHitResult hit;
@@ -168,35 +168,52 @@ void AElementalFatmanCharacter::CheckHitInteractable(bool heating)
 
 	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
 
+	// line trace, either find a heatinteractable actor or set the currently focused actor to null
 	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
-	{	
-		if (!IsValid(hit.GetActor())) return;
-		// find a heatinteractable actor, set its interacted state & change its mesh color depending on whether heating or cooling
-		HitActor = Cast<AHeatInteractable>(hit.GetActor());
-		if (HitActor)
-		{
-			//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.01f, FColor::Green, FString::Printf(TEXT("interactable found")));
+	{
+		if (Cast<AHeatInteractable>(hit.GetActor())) FocusedActor = Cast<AHeatInteractable>(hit.GetActor());
+		else FocusedActor = nullptr; 
+	}
+	else FocusedActor = nullptr;
 
-			// update after timer based on heat/cool charge times			
-			if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
-			{
-				GetWorld()->GetTimerManager().SetTimer(InteractChargeHandler, this, &AElementalFatmanCharacter::UpdateHitInteractable, heating ? HeatChargeTime : CoolChargeTime, false);
-				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Black, FString::Printf(TEXT("started timer")));
-				UE_LOG(LogPlayer, Warning, TEXT("started timer"));
-			}
+	BeginInteraction();
+
+	LastFocusedActor = FocusedActor;
+}
+
+void AElementalFatmanCharacter::BeginInteraction() 
+{
+	// if not looking at valid actor, stop here & clear the timer
+	if (!FocusedActor) GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
+
+	// check the currently focused actor is the same as whatever player last focused on
+	else if (FocusedActor == LastFocusedActor)
+	{
+		// if the timer hasn't already started, start the timer			
+		if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
+		{
+			// on timer completion, attempt to heat/cool the focused actor
+			GetWorld()->GetTimerManager().SetTimer(InteractChargeHandler, this, &AElementalFatmanCharacter::CompleteInteraction, AbilityChargeTime, false);
+			UE_LOG(LogPlayer, Warning, TEXT("started timer"));
 		}
+	}
+	else
+	{
+		// if currently focused actor is not the same as whatever player last focused on, clear the timer
+		GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
+		UE_LOG(LogPlayer, Warning, TEXT("new focused actor"));
 	}
 }
 
-void AElementalFatmanCharacter::UpdateHitInteractable() 
+void AElementalFatmanCharacter::CompleteInteraction() 
 {
 	UE_LOG(LogPlayer, Warning, TEXT("completed timer"));
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Black, FString::Printf(TEXT("completed timer")));
 
+	// clear the timer
 	GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
 
-	// successfully heat or cool the object and spend or gain a heat pip
-	int32 pipDiff = HitActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, PlayerPips);
+	// attempt to heat/cool the actor and lose/gain a pip
+	int32 pipDiff = FocusedActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, PlayerPips);
 	PlayerPips += pipDiff;
 	PlayerPips = FMath::Clamp(PlayerPips, 0, MaxPlayerPips);
 }

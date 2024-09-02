@@ -62,7 +62,7 @@ int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPip
 	}
 	else 
 	{ 
-		UE_LOG(LogInteraction, Warning, TEXT("can't get any hotter  or maybe colder!!!!")); 
+		UE_LOG(LogInteraction, Warning, TEXT("can't get any hotter or maybe colder!!!!")); 
 	}
 
 	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Magenta, FString::Printf(TEXT("%d"), CurrentInteractablePips));

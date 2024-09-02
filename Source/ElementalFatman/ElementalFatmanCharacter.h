@@ -64,10 +64,7 @@ protected:
 	float AbilityRange = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
-	float HeatChargeTime = 1.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
-	float CoolChargeTime = 1.5f;
+	float AbilityChargeTime = 1.5f;
 
 	// 1 player pip is actually 1/2 a pip (e.g. hearts)
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
@@ -78,7 +75,8 @@ protected:
 
 	FTimerHandle InteractChargeHandler;
 
-	AHeatInteractable* HitActor;
+	AHeatInteractable* FocusedActor;
+	AHeatInteractable* LastFocusedActor;
 
 
 public:
@@ -108,9 +106,11 @@ protected:
 
 	void UpdateInteraction(EInteractionType interaction);
 
-	void CheckHitInteractable(bool heating);
+	void CheckIfHittingInteractable();
 
-	void UpdateHitInteractable();
+	void BeginInteraction();
+
+	void CompleteInteraction();
 
 
 protected:
