@@ -16,7 +16,7 @@ class ELEMENTALFATMAN_API AWoodenBarricade : public AHeatInteractable
 
 public:
 
-	void TryInteract(bool heating, int32 currentPlayerPips, int32 maxPlayerPips);
+	int32 ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) override;
 
 protected:
 

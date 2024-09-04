@@ -1,22 +1,73 @@
+#include "HeatInteractable.h"
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "HeatInteractable.h"
-#include "ElementalFatman.h"
+
 
 // Sets default values
 AHeatInteractable::AHeatInteractable()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
 void AHeatInteractable::BeginPlay()
 {
 	Super::BeginPlay();
+	Setup();
 	SetupInstancedMaterial();
 	UpdateColor();
+}
+
+void AHeatInteractable::Setup() 
+{
+	PipsPerInteract = 1;
+
+	switch (ObjectType)
+	{
+	case EObjectType::OT_HeatSource:
+		MaxInteractablePips = 1;
+		CurrentInteractablePips = 1;
+		break;
+	case EObjectType::OT_Water:
+		MaxInteractablePips = 2;
+		CurrentInteractablePips = 1;
+		break;
+	case EObjectType::OT_Barricade:
+		MaxInteractablePips = 1;
+		CurrentInteractablePips = 0;
+		break;
+	case EObjectType::OT_Generator:
+		MaxInteractablePips = 1;
+		CurrentInteractablePips = 0;
+		break;
+	case EObjectType::OT_Fan:
+		MaxInteractablePips = 1;
+		CurrentInteractablePips = 0;
+		break;
+	case EObjectType::OT_Lava:
+		MaxInteractablePips = 1;
+		CurrentInteractablePips = 1;
+	default:
+		break;
+	}
+}
+
+void AHeatInteractable::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+
+	if (ObjectType == EObjectType::OT_Fan) 
+	{
+		FRotator NewRotation = FRotator(0, 0, clockwise ? 3 : -3);
+
+		FQuat QuatRotation = FQuat(NewRotation);
+
+		AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);	
+	}
 }
 
 void AHeatInteractable::SetupInstancedMaterial()
@@ -90,6 +141,7 @@ int32 AHeatInteractable::ValidateInteraction(bool heating, int32 currentPlayerPi
 		}
 	}
 	
+	UpdateInteractable(playerNewPip);
 	return playerNewPip;
 }
 
@@ -101,18 +153,105 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 	{
 		// increase object pips by pipsperinteract (clamp)
 		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips + PipsPerInteract, 0, MaxInteractablePips);
-		UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("heating, object pips: %d"), CurrentInteractablePips));
 	}
+
 	else // cooling
 	{
 		// decrease object pips by pipsperinteract (clamp)
 		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips - PipsPerInteract, 0, MaxInteractablePips);
-		UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("cooling, object pips: %d"), CurrentInteractablePips));
 	}
 
+
 	// any other changes that happen to all interactables after successful interaction
 	// e.g. update interactable's ui here
+
+	switch (ObjectType)
+	{
+	case EObjectType::OT_HeatSource:
+		break;
+	case EObjectType::OT_Water:
+		UpdateWater(CurrentInteractablePips);
+		break;
+	case EObjectType::OT_Barricade:
+		DestroyBarricade(CurrentInteractablePips);
+		break;
+	case EObjectType::OT_Generator:
+		SwitchGenerator(CurrentInteractablePips);
+		break;
+	case EObjectType::OT_Fan:
+		RotateFan(CurrentInteractablePips);
+		break;
+	default:
+		break;
+	}
+
+	UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
 	UpdateColor();
+}
+
+void AHeatInteractable::DestroyBarricade(int32 interactablePips)
+{
+	if (interactablePips < 1) return; // barricades do nothing when cooled
+
+	// set timer, play animation
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("barricade destroyed")));
+	this->Destroy();
+}
+
+void AHeatInteractable::SwitchGenerator(int32 interactablePips)
+{
+	if (interactablePips < 1) 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned off")));
+	}
+
+	else 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned on")));
+		if (Door) Cast<ADoor>(Door)->Open();
+	}
+}
+
+void AHeatInteractable::RotateFan(int32 interactablePips)
+{
+	if (interactablePips < 1) 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise")));
+		clockwise = false;
+	}
+	else 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise")));
+		clockwise = true;
+	}
+}
+
+void AHeatInteractable::UpdateWater(int32 interactablePips) 
+{
+	if (interactablePips < 1)
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("created ice")));
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	}
+	else if (interactablePips > 1) 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("created steam, bye!!!")));
+		this->Destroy();
+	}
+	else 
+	{
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("created water")));
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	}
+}
+
+void AHeatInteractable::SolidifyLava(int32 interactablePips) 
+{
+	if (interactablePips > 0) return;
+
+	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("solidified lava")));
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+
 }

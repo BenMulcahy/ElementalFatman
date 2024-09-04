@@ -3,10 +3,11 @@
 
 #include "WoodenBarricade.h"
 
-void AWoodenBarricade::TryInteract(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
+int32 AWoodenBarricade::ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
 {
-	int32 interactionType = ValidateInteraction(heating, currentPlayerPips, maxPlayerPips);
-	UpdateInteractable(interactionType);
+	Super::ValidateInteraction(heating, currentPlayerPips, maxPlayerPips);
+
+	return 1;
 }
 
 void AWoodenBarricade::UpdateInteractable(int32 interactionType)
@@ -20,5 +21,6 @@ void AWoodenBarricade::UpdateInteractable(int32 interactionType)
 void AWoodenBarricade::BurnAway() 
 {
 	// set timer, play animation
+	UE_LOG(LogInteraction, Warning, TEXT("destroying"));
 	this->Destroy();
 }

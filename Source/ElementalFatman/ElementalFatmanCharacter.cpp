@@ -11,6 +11,7 @@
 #include "InputActionValue.h"
 #include "ElementalFatman.h"
 #include "Engine/LocalPlayer.h"
+#include "HeatInteractable.h"
 #include "ElementalFatmanGameMode.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -191,7 +192,6 @@ void AElementalFatmanCharacter::BeginInteraction()
 	// check the currently focused actor is the same as whatever player last focused on
 	else if (FocusedActor == LastFocusedActor)
 	{
-		UE_LOG(LogInteraction, Warning, TEXT("pog"));
 		// if the timer hasn't already started, start the timer			
 		if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
 		{
