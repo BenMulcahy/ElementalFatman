@@ -47,6 +47,8 @@ void AElementalFatmanCharacter::BeginPlay()
 	Super::BeginPlay();
 	CustomGameModeInstance = CastChecked<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
 	if (!IsValid(CustomGameModeInstance)) UE_LOG(LogPlayer, Error, TEXT("No Custom gamemode found!"));
+
+	HUD = GetWorld()->GetFirstPlayerController()->GetHUD();
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -189,6 +191,7 @@ void AElementalFatmanCharacter::BeginInteraction()
 	// check the currently focused actor is the same as whatever player last focused on
 	else if (FocusedActor == LastFocusedActor)
 	{
+		UE_LOG(LogInteraction, Warning, TEXT("pog"));
 		// if the timer hasn't already started, start the timer			
 		if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
 		{
@@ -213,8 +216,10 @@ void AElementalFatmanCharacter::CompleteInteraction()
 	GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
 
 	// attempt to heat/cool the actor and lose/gain a pip
-	int32 pipDiff = FocusedActor->AttemptInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, CurrentPlayerPips, MaxPlayerPips);
+	int32 pipDiff = FocusedActor->ValidateInteraction(CurrentInteraction == EInteractionType::IT_Heating ? true : false, CurrentPlayerPips, MaxPlayerPips);
 	CurrentPlayerPips += pipDiff;
+
+	// call player pip ui update here please
 }
 
 #pragma endregion

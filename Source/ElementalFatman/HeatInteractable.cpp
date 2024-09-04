@@ -36,7 +36,7 @@ void AHeatInteractable::UpdateColor()
 	DynamicMat->SetVectorParameterValue("TestColour", CurrentInteractablePips == 0 ? FColor::Blue : CurrentInteractablePips == MaxInteractablePips ? FColor::Red : FColor::White);
 }
 
-int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
+int32 AHeatInteractable::ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
 {
 	int32 playerNewPip = 0;
 
@@ -49,17 +49,11 @@ int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPip
 			// check player has enough pips to heat object
 			if (currentPlayerPips >= PipsPerInteract)
 			{
-				// increase object pips by pipsperinteract (clamp)
-				CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips + PipsPerInteract, 0, MaxInteractablePips);
-				UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
-				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("heating, object pips: %d"), CurrentInteractablePips));
-				
 				// decrease player pips by pipsperinteract
 				playerNewPip = -PipsPerInteract;
 			}
 			else // player has insufficient pips
 			{
-				// ui for not enough pips
 				UE_LOG(LogInteraction, Warning, TEXT("you don't have enough pips to heat this object!"));
 				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Magenta, FString::Printf(TEXT("you don't have enough pips to heat this object!")));
 			}
@@ -80,17 +74,11 @@ int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPip
 			// check player is able to gain pips from this
 			if (currentPlayerPips + PipsPerInteract <= maxPlayerPips)
 			{
-				// decrease object pips by pipsperinteract (clamp)
-				CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips - PipsPerInteract, 0, MaxInteractablePips);
-				UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
-				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("cooling, object pips: %d"), CurrentInteractablePips));
-
 				// increase player pips by pipsperinteract
 				playerNewPip = PipsPerInteract;
 			}
 			else // player has too many pips
 			{
-				// ui for too many pips
 				UE_LOG(LogInteraction, Warning, TEXT("you can't gain any more pips!"));
 				if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Magenta, FString::Printf(TEXT("you can't gain any more pips!")));
 			}
@@ -102,6 +90,29 @@ int32 AHeatInteractable::AttemptInteraction(bool heating, int32 currentPlayerPip
 		}
 	}
 	
-	UpdateColor();
 	return playerNewPip;
+}
+
+void AHeatInteractable::UpdateInteractable(int32 interactionType) 
+{
+	if (interactionType == 0) return;
+	
+	if (interactionType < 0) // heating
+	{
+		// increase object pips by pipsperinteract (clamp)
+		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips + PipsPerInteract, 0, MaxInteractablePips);
+		UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("heating, object pips: %d"), CurrentInteractablePips));
+	}
+	else // cooling
+	{
+		// decrease object pips by pipsperinteract (clamp)
+		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips - PipsPerInteract, 0, MaxInteractablePips);
+		UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("cooling, object pips: %d"), CurrentInteractablePips));
+	}
+
+	// any other changes that happen to all interactables after successful interaction
+	// e.g. update interactable's ui here
+	UpdateColor();
 }

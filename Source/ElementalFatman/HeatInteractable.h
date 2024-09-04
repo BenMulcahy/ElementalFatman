@@ -17,9 +17,8 @@ public:
 
 	UMeshComponent* Mesh = nullptr;
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
-	void UpdateColor();
 
-	int32 AttemptInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips);
+	virtual int32 ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips);
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,6 +34,11 @@ protected:
 	int32 PipsPerInteract = 1;
 
 	void SetupInstancedMaterial();
+
+	virtual void UpdateInteractable(int32 interactionType);
+
+	void UpdateColor();
+
 
 //public:	
 //	// Called every frame

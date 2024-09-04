@@ -77,6 +77,7 @@ protected:
 	AHeatInteractable* FocusedActor;
 	AHeatInteractable* LastFocusedActor;
 
+	AHUD* HUD;
 
 public:
 		
