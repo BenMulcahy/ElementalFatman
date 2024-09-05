@@ -29,6 +29,9 @@ protected:
 
 	void StopOpening();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float OpenAmount = 5;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -183,6 +183,9 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 	case EObjectType::OT_Fan:
 		RotateFan(CurrentInteractablePips);
 		break;
+	case EObjectType::OT_Lava:
+		SolidifyLava(CurrentInteractablePips);
+		break;
 	default:
 		break;
 	}

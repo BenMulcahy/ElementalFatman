@@ -23,7 +23,7 @@ void ADoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (opening) SetActorLocation(GetActorLocation() + FVector(0, 5, 0));
+	if (opening) SetActorLocation(GetActorLocation() + FVector(0, OpenAmount, 0));
 }
 
 void ADoor::Open() 
