@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
-#include "WoodenBarricade.generated.h"
+#include "Generator.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELEMENTALFATMAN_API AWoodenBarricade : public AHeatInteractable
+class ELEMENTALFATMAN_API AGenerator : public AHeatInteractable
 {
 	GENERATED_BODY()
 
@@ -19,4 +19,6 @@ protected:
 	void Setup();
 	void InvokeSpecificMechanic(int32 interactionType);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	AActor* Door;
 };

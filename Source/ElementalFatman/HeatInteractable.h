@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ElementalFatman.h"
 #include "Door.h"
+#include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "HeatInteractable.generated.h"
 
 UENUM()
@@ -28,18 +30,28 @@ public:
 	// Sets default values for this actor's properties
 	AHeatInteractable();
 
-	UMeshComponent* Mesh = nullptr;
-	UMaterialInstanceDynamic* DynamicMat = nullptr;
+	int32 ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips);
 
-	virtual int32 ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips);
+	void UpdateInteractable(int32 interactionType);
+
+	// virtual allows a function of the same name to be automatically called on child classes -- need to look into this more
+	virtual void Setup();
+
+	virtual void InvokeSpecificMechanic(int32 interactionType);
+
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void Setup();
+	UPROPERTY(EditAnywhere)
+	UMeshComponent* Mesh = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UMaterialInstanceDynamic* DynamicMat = nullptr;
+
+	UBoxComponent* BoxCollider = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, Category = Mechanics)
 	EObjectType ObjectType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
@@ -52,31 +64,11 @@ protected:
 	int32 PipsPerInteract = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
-	AActor* Door;
-
-	bool clockwise = true;
-
-	void SetupInstancedMaterial();
-
-	virtual void UpdateInteractable(int32 interactionType);
-
-	void DestroyBarricade(int32 interactablePips);
-
-	void SwitchGenerator(int32 interactablePips);
-
-	void RotateFan(int32 interactablePips);
-
-	void UpdateWater(int32 interactablePips);
-
-	void SolidifyLava(int32 interactablePips);
-
-	FTimerHandle RotateTimerHandle;
+	bool OverrideMesh = false;
 
 	void UpdateColor();
 
+	FVector BoxSize = FVector(45, 45, 45);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+public:
 };

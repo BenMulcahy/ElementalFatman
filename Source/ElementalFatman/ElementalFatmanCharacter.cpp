@@ -180,7 +180,6 @@ void AElementalFatmanCharacter::CheckIfHittingInteractable()
 	else FocusedActor = nullptr;
 
 	BeginInteraction();
-
 	LastFocusedActor = FocusedActor;
 }
 

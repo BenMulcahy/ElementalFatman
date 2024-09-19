@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
-#include "WoodenBarricade.generated.h"
+#include "HeatSource.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELEMENTALFATMAN_API AWoodenBarricade : public AHeatInteractable
+class ELEMENTALFATMAN_API AHeatSource : public AHeatInteractable
 {
 	GENERATED_BODY()
 

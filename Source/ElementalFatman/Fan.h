@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
-#include "WoodenBarricade.generated.h"
+#include "Fan.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELEMENTALFATMAN_API AWoodenBarricade : public AHeatInteractable
+class ELEMENTALFATMAN_API AFan : public AHeatInteractable
 {
 	GENERATED_BODY()
 
@@ -18,5 +18,12 @@ protected:
 
 	void Setup();
 	void InvokeSpecificMechanic(int32 interactionType);
+
+	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	int32 RotationSpeed = 3;
+
+	bool clockwise = true;
 
 };

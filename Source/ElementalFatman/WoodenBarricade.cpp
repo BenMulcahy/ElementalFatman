@@ -3,24 +3,30 @@
 
 #include "WoodenBarricade.h"
 
-int32 AWoodenBarricade::ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
+void AWoodenBarricade::Setup() 
 {
-	Super::ValidateInteraction(heating, currentPlayerPips, maxPlayerPips);
+	if (!OverrideMesh) 
+	{
+		// construct mesh here
+	}
 
-	return 1;
+	ObjectType = EObjectType::OT_Barricade;
+
+	UE_LOG(LogInteraction, Warning, TEXT("setting up barricade"));
+
+	MaxInteractablePips = 1;
+	CurrentInteractablePips = 0;
 }
 
-void AWoodenBarricade::UpdateInteractable(int32 interactionType)
-{
-	Super::UpdateInteractable(interactionType);
 
-	// heating
-	if (interactionType < 0) BurnAway();
-}
-
-void AWoodenBarricade::BurnAway() 
+void AWoodenBarricade::InvokeSpecificMechanic(int32 interactionType) 
 {
-	// set timer, play animation
-	UE_LOG(LogInteraction, Warning, TEXT("destroying"));
-	this->Destroy();
+	UE_LOG(LogTemp, Warning, TEXT("SUBCLASS INVOKING!!!"))
+
+	if (interactionType < 0) 
+	{
+		// set timer, play animation
+		UE_LOG(LogInteraction, Warning, TEXT("destroying"));
+		this->Destroy();
+	}
 }
