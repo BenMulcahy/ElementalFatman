@@ -5,6 +5,8 @@
 
 void AWoodenBarricade::Setup() 
 {
+	Super::Setup();
+
 	if (!OverrideMesh) 
 	{
 		// construct mesh here
@@ -19,14 +21,19 @@ void AWoodenBarricade::Setup()
 }
 
 
-void AWoodenBarricade::InvokeSpecificMechanic(int32 interactionType) 
+void AWoodenBarricade::InvokeSpecificMechanic() 
 {
-	UE_LOG(LogTemp, Warning, TEXT("SUBCLASS INVOKING!!!"))
-
-	if (interactionType < 0) 
+	switch (CurrentInteractablePips)
 	{
-		// set timer, play animation
+	case 0:
+		// do nothing but don't throw error msg
+		break;
+	case 1:
 		UE_LOG(LogInteraction, Warning, TEXT("destroying"));
 		this->Destroy();
+		break;
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Barricade current pip value error!"));
+		break;
 	}
 }

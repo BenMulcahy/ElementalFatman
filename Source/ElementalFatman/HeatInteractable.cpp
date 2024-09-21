@@ -8,43 +8,45 @@ AHeatInteractable::AHeatInteractable()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	RootComponent = Root;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
+	Mesh->SetupAttachment(RootComponent);
 
 	// construct box collider
 	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
-	BoxCollider->SetupAttachment(Mesh);
-	BoxCollider->SetBoxExtent(FVector(45, 45, 45));
+	BoxCollider->SetupAttachment(RootComponent);
 
-	// construct ui widget
-
+	// construct ui widget (displays pip count)
+	UIWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("UI Widget"));
+	UIWidget->SetupAttachment(RootComponent);
+	UIWidget->SetRelativeLocation(FVector(0, 0, 90));
+	UIWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	UIWidget->SetDrawSize(FVector2D(50, 50));
 }
 
 // Called when the game starts or when spawned
 void AHeatInteractable::BeginPlay()
 {
 	Super::BeginPlay();
+
 	Setup();
 	UpdateColor();
+	UpdateUI();
 }
 
 void AHeatInteractable::Setup() 
 {
-	PipsPerInteract = 1;
+	PipsPerInteract = 1; // currently all interactables use/give one pip, could be changed in the future
 
-	// set up instanced material
-	Mesh = Cast<UMeshComponent>(GetComponentByClass<UMeshComponent>());
-	if (Mesh) { UE_LOG(LogTemp, Warning, TEXT("Found mesh: %s"), *Mesh->GetName()); }
-	else UE_LOG(LogTemp, Warning, TEXT("No mesh found"));
-
+	// set up temporary dynamic material so can change object's colour to indicate heat/cool state
 	DynamicMat = UMaterialInstanceDynamic::Create(Mesh->GetMaterials()[0], this);
-	if (!IsValid(DynamicMat)) { UE_LOG(LogTemp, Error, TEXT("Sorry! No dynamic material for you")) return; }
 	Mesh->SetMaterial(0, DynamicMat);
 }
 
 void AHeatInteractable::UpdateColor()
 {
-	if (!IsValid(DynamicMat)) { UE_LOG(LogTemp, Error, TEXT("Woopsie! No Dynamic matieral here lmao")); return; }
 	DynamicMat->SetVectorParameterValue("TestColour", CurrentInteractablePips == 0 ? FColor::Blue : CurrentInteractablePips == MaxInteractablePips ? FColor::Red : FColor::White);
 }
 
@@ -108,30 +110,33 @@ int32 AHeatInteractable::ValidateInteraction(bool heating, int32 currentPlayerPi
 
 void AHeatInteractable::UpdateInteractable(int32 interactionType) 
 {
+	// validation failed
 	if (interactionType == 0) return;
 	
-	if (interactionType < 0) // heating
+	if (interactionType < 0) // successfully heated
 	{
 		// increase object pips by pipsperinteract (clamp)
 		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips + PipsPerInteract, 0, MaxInteractablePips);
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Red, FString::Printf(TEXT("heating, object pips: %d"), CurrentInteractablePips));
 	}
 
-	else // cooling
+	else // successfully cooled
 	{
 		// decrease object pips by pipsperinteract (clamp)
 		CurrentInteractablePips = FMath::Clamp(CurrentInteractablePips - PipsPerInteract, 0, MaxInteractablePips);
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Blue, FString::Printf(TEXT("cooling, object pips: %d"), CurrentInteractablePips));
 	}
 
-	// any other changes that happen to all interactables after successful interaction
-	// e.g. update interactable's ui here
-
-	UE_LOG(LogInteraction, Warning, TEXT("object pips: %d"), CurrentInteractablePips);
+	// any other changes that happen to all interactables after successful interaction go here
 	UpdateColor();
+	UpdateUI();
 
 	// update unique interactables
-	InvokeSpecificMechanic(interactionType);
+	InvokeSpecificMechanic();
 }
 
-void AHeatInteractable::InvokeSpecificMechanic(int32 interactionType) {}
+void AHeatInteractable::InvokeSpecificMechanic() {} // virtual function for child classes
+
+void AHeatInteractable::UpdateUI() 
+{
+	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
+	ProcessEvent(UIFunction, nullptr);
+}

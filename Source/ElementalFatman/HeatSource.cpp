@@ -5,12 +5,14 @@
 
 void AHeatSource::Setup()
 {
+	Super::Setup();
+
 	if (!OverrideMesh)
 	{
 		// construct mesh here
 	}
 
-	ObjectType = EObjectType::OT_Barricade;
+	ObjectType = EObjectType::OT_HeatSource;
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up heat source"));
 
@@ -19,7 +21,18 @@ void AHeatSource::Setup()
 }
 
 
-void AHeatSource::InvokeSpecificMechanic(int32 interactionType)
+void AHeatSource::InvokeSpecificMechanic()
 {
-
+	switch (CurrentInteractablePips)
+	{
+	case 0:
+		// probably change visuals
+		break;
+	case 1:
+		// do nothing atm, can you re-heat heat sources?
+		break;
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Heat source current pip value error!"));
+		break;
+	}
 }

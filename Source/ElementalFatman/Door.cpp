@@ -8,14 +8,12 @@ ADoor::ADoor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 // Called when the game starts or when spawned
 void ADoor::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -23,22 +21,18 @@ void ADoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (opening) SetActorLocation(GetActorLocation() + FVector(0, OpenAmount, 0));
+	// lerp between positions based on duration time
+	Position = IsOpen ? FMath::Clamp(Position + (DeltaTime / Duration), 0, 1) : FMath::Clamp(Position - (DeltaTime / Duration), 0, 1);
+	SetActorLocation(FMath::Lerp(ClosedLocation, OpenLocation, Position));
 }
 
 void ADoor::Open() 
 {
-	StartOpening();
-	GetWorld()->GetTimerManager().SetTimer(OpenHandler, this, &ADoor::StopOpening, 1.5f, false);
+	IsOpen = true;
 }
 
-void ADoor::StartOpening() 
+void ADoor::Close() 
 {
-	opening = true;
-}
-
-void ADoor::StopOpening()
-{
-	opening = false;
+	IsOpen = false;
 }
 

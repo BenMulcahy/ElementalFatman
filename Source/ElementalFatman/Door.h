@@ -16,24 +16,28 @@ public:
 	ADoor();
 
 	void Open();
+	void Close();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	bool opening = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector ClosedLocation;
 
-	FTimerHandle OpenHandler;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector OpenLocation;
 
-	void StartOpening();
-
-	void StopOpening();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Duration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float OpenAmount = 5;
+	
+	float Position = 0;
+	bool IsOpen = false;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 };

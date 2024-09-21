@@ -17,7 +17,7 @@ class ELEMENTALFATMAN_API AFan : public AHeatInteractable
 protected:
 
 	void Setup();
-	void InvokeSpecificMechanic(int32 interactionType);
+	void InvokeSpecificMechanic();
 
 	virtual void Tick(float DeltaTime) override;
 

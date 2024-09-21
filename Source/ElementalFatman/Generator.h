@@ -17,7 +17,7 @@ class ELEMENTALFATMAN_API AGenerator : public AHeatInteractable
 protected:
 
 	void Setup();
-	void InvokeSpecificMechanic(int32 interactionType);
+	void InvokeSpecificMechanic();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	AActor* Door;

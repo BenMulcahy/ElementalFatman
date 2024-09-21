@@ -5,30 +5,36 @@
 
 void AGenerator::Setup()
 {
-	if (!OverrideMesh)
+	Super::Setup();
+
+	if (OverrideMesh)
 	{
-		// construct mesh here
+		// replace mesh with variants here
 	}
 
-	ObjectType = EObjectType::OT_Barricade;
-
 	UE_LOG(LogInteraction, Warning, TEXT("setting up generator"));
+
+	ObjectType = EObjectType::OT_Generator;
 
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = 0;
 }
 
 
-void AGenerator::InvokeSpecificMechanic(int32 interactionType)
+void AGenerator::InvokeSpecificMechanic()
 {
-	if (interactionType < 1)
+	switch (CurrentInteractablePips)
 	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned off")));
-	}
-
-	else
-	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned on")));
-		if (Door) Cast<ADoor>(Door)->Open();
+		case 0: // switch off
+			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned off")));
+			if (Door) Cast<ADoor>(Door)->Close();
+			break;
+		case 1: // switch on
+			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned on")));
+			if (Door) Cast<ADoor>(Door)->Open();
+			break;
+		default:
+			UE_LOG(LogTemp, Error, TEXT("Generator current pip value error!"));
+			break;
 	}
 }

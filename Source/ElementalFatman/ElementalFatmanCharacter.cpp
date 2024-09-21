@@ -46,8 +46,7 @@ void AElementalFatmanCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	CustomGameModeInstance = CastChecked<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
-	if (!IsValid(CustomGameModeInstance)) UE_LOG(LogPlayer, Error, TEXT("No Custom gamemode found!"));
+	CustomGameModeInstance = Cast<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
 
 	HUD = GetWorld()->GetFirstPlayerController()->GetHUD();
 }

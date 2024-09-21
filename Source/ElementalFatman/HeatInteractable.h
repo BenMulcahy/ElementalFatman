@@ -8,6 +8,7 @@
 #include "Door.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "HeatInteractable.generated.h"
 
 UENUM()
@@ -37,19 +38,26 @@ public:
 	// virtual allows a function of the same name to be automatically called on child classes -- need to look into this more
 	virtual void Setup();
 
-	virtual void InvokeSpecificMechanic(int32 interactionType);
+	virtual void InvokeSpecificMechanic();
 
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	USceneComponent* Root = nullptr;
+
 	UPROPERTY(EditAnywhere)
 	UMeshComponent* Mesh = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
+	UBoxComponent* BoxCollider = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UWidgetComponent* UIWidget = nullptr;
+
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
 
-	UBoxComponent* BoxCollider = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = Mechanics)
 	EObjectType ObjectType;
@@ -68,7 +76,8 @@ protected:
 
 	void UpdateColor();
 
-	FVector BoxSize = FVector(45, 45, 45);
+	void UpdateUI();
+
 
 public:
 };

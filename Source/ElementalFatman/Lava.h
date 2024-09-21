@@ -19,6 +19,6 @@ protected:
 	ALava();
 
 	void Setup();
-	void InvokeSpecificMechanic(int32 interactionType);
+	void InvokeSpecificMechanic();
 
 };

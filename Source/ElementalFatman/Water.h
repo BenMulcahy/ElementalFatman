@@ -17,6 +17,6 @@ class ELEMENTALFATMAN_API AWater : public AHeatInteractable
 protected:
 
 	void Setup();
-	void InvokeSpecificMechanic(int32 interactionType);
+	void InvokeSpecificMechanic();
 
 };

@@ -5,6 +5,8 @@
 
 void AFan::Setup()
 {
+	Super::Setup();
+
 	if (!OverrideMesh)
 	{
 		// construct mesh here
@@ -19,17 +21,21 @@ void AFan::Setup()
 }
 
 
-void AFan::InvokeSpecificMechanic(int32 interactionType)
+void AFan::InvokeSpecificMechanic()
 {
-	if (interactionType < 1)
+	switch (CurrentInteractablePips)
 	{
+	case 0:
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise")));
+		clockwise = true;		
+		break;
+	case 1:
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise")));
 		clockwise = false;
-	}
-	else
-	{
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise")));
-		clockwise = true;
+		break;
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Fan current pip value error!"));
+		break;
 	}
 }
 
@@ -41,5 +47,6 @@ void AFan::Tick(const float DeltaSeconds)
 
 	FQuat QuatRotation = FQuat(NewRotation);
 
-	AddActorLocalRotation(QuatRotation, false, 0, ETeleportType::None);	
+	Mesh->AddLocalRotation(QuatRotation, false, 0);
+
 }
