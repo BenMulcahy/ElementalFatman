@@ -101,6 +101,10 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	void Mantle();
+
+	void StopMantling();
+
 	void Interact(const FInputActionValue& Value);
 	void CancelInteract(const FInputActionValue& Value);
 

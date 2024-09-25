@@ -59,8 +59,8 @@ void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElementalFatmanCharacter::Mantle);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElementalFatmanCharacter::StopMantling);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Move);
@@ -103,6 +103,23 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AElementalFatmanCharacter::Mantle()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Mantling"));
+	// check player colliding with mantleable actor
+	// calculate how far up to raise player based on mantleable actor's height minus player's height
+	// calculate how far onto the actor to move the player after raising
+	// set a kind of "stick to object" bool, move player up based on a duration time
+	// move player forwards/on based on a duration time
+	// switch off the "stick to object" bool
+}
+
+void AElementalFatmanCharacter::StopMantling()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Stop mantling"));
+	// switch off the "stick to object" bool
 }
 
 #pragma region Interacting
@@ -173,7 +190,11 @@ void AElementalFatmanCharacter::CheckIfHittingInteractable()
 	// line trace, either find a heatinteractable actor or set the currently focused actor to null
 	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
 	{
-		if (Cast<AHeatInteractable>(hit.GetActor())) FocusedActor = Cast<AHeatInteractable>(hit.GetActor());
+		if (Cast<AHeatInteractable>(hit.GetActor()))
+		{
+			FocusedActor = Cast<AHeatInteractable>(hit.GetActor());
+			// update crosshair colour
+		}
 		else FocusedActor = nullptr; 
 	}
 	else FocusedActor = nullptr;
