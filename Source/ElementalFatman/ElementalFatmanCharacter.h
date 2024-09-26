@@ -38,6 +38,9 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = Collider)
+	UCapsuleComponent* Collider;
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
@@ -72,12 +75,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Pips", meta = (ClampMin = "0", UIMin = "0"))
 	int32 MaxPlayerPips = 4;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	float MantleRange = 100;
+
 	FTimerHandle InteractChargeHandler;
 
 	AHeatInteractable* FocusedActor;
 	AHeatInteractable* LastFocusedActor;
 
 	AHUD* HUD;
+
 
 public:
 		
@@ -100,6 +107,12 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	bool CheckMantle();
+
+	void JumpOrMantle();
+
+	void StopJumpingOrMantling();
 
 	void Mantle();
 
@@ -127,6 +140,5 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
 };
 

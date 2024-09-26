@@ -22,7 +22,8 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 AElementalFatmanCharacter::AElementalFatmanCharacter()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
+	Collider = GetCapsuleComponent();
+	Collider->InitCapsuleSize(55.f, 96.f);
 		
 	// Create a CameraComponent	
 	// CreateDefaultSubobject creates the component on a blueprint before the game even runs
@@ -59,8 +60,8 @@ void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElementalFatmanCharacter::Mantle);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElementalFatmanCharacter::StopMantling);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AElementalFatmanCharacter::JumpOrMantle);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AElementalFatmanCharacter::StopJumpingOrMantling);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Move);
@@ -105,10 +106,42 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+bool AElementalFatmanCharacter::CheckMantle()
+{
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	FVector startPos = FirstPersonCameraComponent->GetComponentLocation();
+	FVector dir = FirstPersonCameraComponent->GetForwardVector();
+	FVector endPos = startPos + (dir * MantleRange);
+
+	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
+
+	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
+	{
+		if (hit.GetActor()->ActorHasTag("Mantle")) return true;
+		return false;
+	}
+	return false;
+}
+
+void AElementalFatmanCharacter::JumpOrMantle() 
+{
+	// check if close to mantleable ledge
+	if (CheckMantle()) Mantle();
+	else Jump();
+}
+
+void AElementalFatmanCharacter::StopJumpingOrMantling() 
+{
+	StopJumping();
+	StopMantling();
+}
+
 void AElementalFatmanCharacter::Mantle()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Mantling"));
-	// check player colliding with mantleable actor
 	// calculate how far up to raise player based on mantleable actor's height minus player's height
 	// calculate how far onto the actor to move the player after raising
 	// set a kind of "stick to object" bool, move player up based on a duration time

@@ -30,7 +30,7 @@ void APressurePlate::BeginPlay()
 void APressurePlate::Press() 
 {
 	Mesh->SetRelativeLocation(FVector(Mesh->GetRelativeLocation().X, Mesh->GetRelativeLocation().Y, PressedPosition));
-	DeleteThis->Destroy();
+	if (DeleteThis)	DeleteThis->Destroy();
 }
 
 void APressurePlate::Reset() 
