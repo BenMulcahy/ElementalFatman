@@ -14,6 +14,10 @@ class ELEMENTALFATMAN_API AGenerator : public AHeatInteractable
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool SwitchedOn;
+
 protected:
 
 	void Setup();
@@ -21,4 +25,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	AActor* Door;
+
+
 };

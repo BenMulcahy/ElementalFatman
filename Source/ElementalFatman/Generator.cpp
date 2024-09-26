@@ -28,10 +28,12 @@ void AGenerator::InvokeSpecificMechanic()
 		case 0: // switch off
 			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned off")));
 			if (Door) Cast<ADoor>(Door)->Close();
+			SwitchedOn = false;
 			break;
 		case 1: // switch on
 			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned on")));
 			if (Door) Cast<ADoor>(Door)->Open();
+			SwitchedOn = true;
 			break;
 		default:
 			UE_LOG(LogTemp, Error, TEXT("Generator current pip value error!"));

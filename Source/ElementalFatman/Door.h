@@ -15,7 +15,10 @@ public:
 	// Sets default values for this actor's properties
 	ADoor();
 
+	UFUNCTION(BlueprintCallable)
 	void Open();
+
+	UFUNCTION(BlueprintCallable)
 	void Close();
 
 protected:
