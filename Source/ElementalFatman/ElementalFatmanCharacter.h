@@ -76,7 +76,13 @@ protected:
 	int32 MaxPlayerPips = 4;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float MantleRange = 100;
+	float DistanceToTriggerMantling = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	float UpperMantleLimit = 500;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	float InnerMantleLimit = 200;
 
 	FTimerHandle InteractChargeHandler;
 
@@ -108,13 +114,15 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	bool CheckMantle();
+	bool CheckMantle(FVector _startPos, FVector _dir, float distance);
 
 	void JumpOrMantle();
 
 	void StopJumpingOrMantling();
 
 	void Mantle();
+
+	bool ValidateMantle();
 
 	void StopMantling();
 
