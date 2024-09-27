@@ -63,6 +63,8 @@ public:
 protected:
 	virtual void BeginPlay();
 
+	virtual void Tick(float DeltaTime);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
 	float AbilityRange = 300;
 
@@ -79,10 +81,13 @@ protected:
 	float DistanceToTriggerMantling = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float UpperMantleLimit = 500;
+	float CheckMantleEyeLevel = 150;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float InnerMantleLimit = 200;
+	float UpperMantleLimit = 250;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	float InnerMantleLimit = 75;
 
 	FTimerHandle InteractChargeHandler;
 
@@ -114,15 +119,17 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	bool CheckMantle(FVector _startPos, FVector _dir, float distance);
-
 	void JumpOrMantle();
+
+	bool CheckMantle(FVector _startPos, FVector _dir, float distance, int colorNum = 0);
+
+	bool IsMantleValid();
+
+	FVector GetMantlePoint();
 
 	void StopJumpingOrMantling();
 
 	void Mantle();
-
-	bool ValidateMantle();
 
 	void StopMantling();
 

@@ -52,6 +52,22 @@ void AElementalFatmanCharacter::BeginPlay()
 	HUD = GetWorld()->GetFirstPlayerController()->GetHUD();
 }
 
+void AElementalFatmanCharacter::Tick(float DeltaTime) 
+{
+	Super::Tick(DeltaTime);
+
+	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
+	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
+
+	TracePoint.Z += CheckMantleEyeLevel;
+	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
+
+	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit), Collider->GetForwardVector(), InnerMantleLimit, 1);
+	
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
+	CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2);
+}
+
 //////////////////////////////////////////////////////////////////////////// Input
 
 void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -106,33 +122,21 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, float distance)
-{
-	FHitResult hit;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-
-	FVector startPos = _startPos;
-	UE_LOG(LogTemp, Warning, TEXT("%f, %f, %f"), startPos.X, startPos.Y, startPos.Z);
-	FVector dir = _dir;
-	FVector endPos = startPos + (dir * distance);
-
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Green, false);
-
-	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
-	{
-		if (!hit.GetActor()) return false;
-		if (hit.GetActor()->ActorHasTag("Mantle")) return true;
-		return false;
-	}
-	return false;
-}
+#pragma region Mantling
 
 void AElementalFatmanCharacter::JumpOrMantle() 
 {
 	// check if close to mantleable ledge, check both feet level and eye level, either is valid
-	if (CheckMantle(Collider->GetComponentLocation(), Collider->GetForwardVector(), DistanceToTriggerMantling)) Mantle();
-	else Jump();
+	bool MantleAtFootLevel = false;
+	bool MantleAtEyeLevel = false;
+
+	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
+	MantleAtFootLevel = CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
+
+	TracePoint.Z += CheckMantleEyeLevel; // adjust for eye level
+	MantleAtEyeLevel = CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
+
+	if (MantleAtFootLevel || MantleAtEyeLevel) IsMantleValid() ? Mantle() : Jump();
 }
 
 void AElementalFatmanCharacter::StopJumpingOrMantling() 
@@ -141,67 +145,83 @@ void AElementalFatmanCharacter::StopJumpingOrMantling()
 	StopMantling();
 }
 
+bool AElementalFatmanCharacter::IsMantleValid()
+{
+	// check if mantleable object is too tall
+	// linetrace from upper limit, if hit nothing within inner limit distance, obj not too tall -> can mantle
+	if (CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit), Collider->GetForwardVector(), InnerMantleLimit))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("mantle object too tall"));
+		return false;
+	}
+
+	// check if mantleable object is too thin (or the angle the player is looking at the obj is too extreme)
+	// from upper mantle limit, linetrace down onto mantleable object at the inner limit distance
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
+	if (!CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("mantle object too skinnyyyyy/weird angle"));
+		return false;
+	}
+
+	// if passed both tests, can mantle
+	return true;
+}
+
+bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, float distance, int colorNum)
+{
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FVector StartPos = _startPos;
+	FVector Dir = _dir;
+	FVector EndPos = StartPos + (Dir * distance);
+
+	DrawDebugLine(GetWorld(), StartPos, EndPos, colorNum == 0 ? FColor::Green : colorNum == 1 ? FColor::Yellow : FColor::Red, false);
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params))
+	{
+		if (!Hit.GetActor()) return false;
+		if (Hit.GetActor()->ActorHasTag("Mantle")) return true;
+		return false;
+	}
+	return false;
+}
+
 void AElementalFatmanCharacter::Mantle()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Mantling"));
-	// find pos to move player to (up and on)
-	// - height limit on mantling -- raycast top, if hit nothing within X distance, can mantle
-	if (!ValidateMantle()) 
-	{
-		UE_LOG(LogTemp, Warning, TEXT("mantle object too tall"))
-		return;
-	}
 
-	// - from height limit, raycast down onto object at X distance, record point hit
-	FVector MantleLocation;
+	// find the point on the mantleable obj we're gonna move the player to
+	FVector MantlePoint = GetMantlePoint();
+	MantlePoint.Z += GetDefaultHalfHeight(); // account for the collider's position being its center
 
-	FHitResult hit;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-
-	FVector startPos = FVector(Collider->GetComponentLocation().X, InnerMantleLimit, UpperMantleLimit);
-	FVector dir = -(Collider->GetUpVector());
-	FVector endPos = startPos + (dir * 10000);
-
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
-
-	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
-	{
-		if (!hit.GetActor()) return;
-		if (hit.GetActor()->ActorHasTag("Mantle")) 
-		{
-			MantleLocation = hit.ImpactPoint;
-			UE_LOG(LogTemp, Warning, TEXT("ladies and gentlemen, we did it: %f, %f, %f"), MantleLocation.X, MantleLocation.Y, MantleLocation.Z);
-		}
-		else UE_LOG(LogTemp, Warning, TEXT("mantle object might also be too skinnyyyy"));
-	}
-	else UE_LOG(LogTemp, Warning, TEXT("mantle object too skinnyyyy"));
 	// set a kind of "stick to object" bool, move player up based on a duration time
 	// move player forwards/on based on a duration time
+
+	Collider->SetRelativeLocation(MantlePoint); // temp instant teleport, make lerp/animation later
 	// switch off the "stick to object" bool
 }
 
-bool AElementalFatmanCharacter::ValidateMantle() 
+FVector AElementalFatmanCharacter::GetMantlePoint() 
 {
-	FHitResult hit;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
+	FVector MantleLocation;
 
-	FVector startPos = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit);
-	FVector dir = Collider->GetForwardVector();
-	FVector endPos = startPos + (dir * InnerMantleLimit);
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
 
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red, false);
+	FVector StartPos = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
+	FVector Dir = -(Collider->GetUpVector());
+	FVector EndPos = StartPos + (Dir * 1000);
 
-	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
-	{
-		if (!hit.GetActor()) 
-		{
-			if (hit.GetActor()->ActorHasTag("Mantle")) return false;
-			return true;
-		}
-	}
-	return true;
+	// not checking validity of line trace bc we just did that with validatemantle()
+	GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params);
+	MantleLocation = Hit.ImpactPoint;
+	UE_LOG(LogTemp, Warning, TEXT("ladies and gentlemen, we did it: %f, %f, %f"), MantleLocation.X, MantleLocation.Y, MantleLocation.Z);
+	
+	return MantleLocation;
 }
 
 void AElementalFatmanCharacter::StopMantling()
@@ -209,6 +229,8 @@ void AElementalFatmanCharacter::StopMantling()
 	UE_LOG(LogTemp, Warning, TEXT("Stop mantling"));
 	// switch off the "stick to object" bool
 }
+
+#pragma endregion
 
 #pragma region Interacting
 
@@ -221,7 +243,8 @@ void AElementalFatmanCharacter::Interact(const FInputActionValue& Value)
 	{
 		UpdateInteraction(EInteractionType::IT_Heating);
 	}
-	else if (Value.Get<FVector2D>().Y > 0 && Value.Get<FVector2D>().X == 0) {
+	else if (Value.Get<FVector2D>().Y > 0 && Value.Get<FVector2D>().X == 0) 
+	{
 		UpdateInteraction(EInteractionType::IT_Cooling);
 	}
 	else
