@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "HeatInteractable.h"
+#include "Curves/CurveVector.h"
 #include "ElementalFatmanCharacter.generated.h"
 
 class UInputComponent;
@@ -81,20 +82,37 @@ protected:
 	float DistanceToTriggerMantling = 100;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float CheckMantleEyeLevel = 150;
+	float SearchMantleEyeLevel = 150;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float UpperMantleLimit = 250;
+	float MantleHeightLimit = 250;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
-	float InnerMantleLimit = 75;
+	float MantleWidthLimit = 75;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	float MantleDuration = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
+	UCurveVector* MantleCurve = nullptr;
+	
+	FTimerDelegate MantleDelegate;
+
+	FTimerHandle MantleHandler;
 	FTimerHandle InteractChargeHandler;
 
 	AHeatInteractable* FocusedActor;
 	AHeatInteractable* LastFocusedActor;
 
 	AHUD* HUD;
+
+	float CharacterGravity;
+	UPROPERTY(VisibleAnywhere)
+	FVector MantleStartPos;
+	FVector MantleEndPos;
+	float MantleAlpha;
+	UPROPERTY(VisibleAnywhere)
+	bool IsMantling;
 
 
 public:
@@ -125,11 +143,14 @@ protected:
 
 	bool IsMantleValid();
 
-	FVector GetMantlePoint();
+	FVector GetMantleEndPos(FVector _startPos, FVector _dir, float distance);
+
+	UFUNCTION()
+	void MantleMovement(FVector StartPos, FVector EndPos);
 
 	void StopJumpingOrMantling();
 
-	void Mantle();
+	void Mantle(FVector StartPos, FVector EndPos);
 
 	void StopMantling();
 

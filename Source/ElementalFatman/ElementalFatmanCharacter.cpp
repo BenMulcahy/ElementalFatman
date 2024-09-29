@@ -40,7 +40,6 @@ AElementalFatmanCharacter::AElementalFatmanCharacter()
 	Mesh1P->CastShadow = false;
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
 }
 
 void AElementalFatmanCharacter::BeginPlay()
@@ -59,12 +58,12 @@ void AElementalFatmanCharacter::Tick(float DeltaTime)
 	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
 	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
 
-	TracePoint.Z += CheckMantleEyeLevel;
+	TracePoint.Z += SearchMantleEyeLevel;
 	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
 
-	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit), Collider->GetForwardVector(), InnerMantleLimit, 1);
+	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit), Collider->GetForwardVector(), MantleWidthLimit, 1);
 	
-	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit) + (Collider->GetForwardVector() * MantleWidthLimit);
 	CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2);
 }
 
@@ -126,49 +125,87 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 
 void AElementalFatmanCharacter::JumpOrMantle() 
 {
+	if (IsMantling) // if already validated the mantle & character is currently moving, don't run the validity checks again 
+	{
+		Mantle(MantleStartPos, MantleEndPos);
+		return; 
+	}
+
+	// new jump/mantle check
 	// check if close to mantleable ledge, check both feet level and eye level, either is valid
 	bool MantleAtFootLevel = false;
 	bool MantleAtEyeLevel = false;
 
-	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
-	MantleAtFootLevel = CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
+	// searching for mantleable ledge at foot level
+	FVector MantleSearchPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight()); // foot level
+	MantleAtFootLevel = CheckMantle(MantleSearchPoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
 
-	TracePoint.Z += CheckMantleEyeLevel; // adjust for eye level
-	MantleAtEyeLevel = CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
+	// searching for mantleable ledge at eye level
+	MantleSearchPoint.Z += SearchMantleEyeLevel; // adjust to eye level
+	MantleAtEyeLevel = CheckMantle(MantleSearchPoint, Collider->GetForwardVector(), DistanceToTriggerMantling);
 
-	if (MantleAtFootLevel || MantleAtEyeLevel) IsMantleValid() ? Mantle() : Jump();
-}
-
-void AElementalFatmanCharacter::StopJumpingOrMantling() 
-{
-	StopJumping();
-	StopMantling();
+	// if mantleable ledge was found, check if it's valid, then begin mantling, otherwise jump
+	if (MantleAtFootLevel || MantleAtEyeLevel) IsMantleValid() ? Mantle(MantleStartPos, MantleEndPos) : Jump();
+	else Jump();
 }
 
 bool AElementalFatmanCharacter::IsMantleValid()
 {
-	// check if mantleable object is too tall
-	// linetrace from upper limit, if hit nothing within inner limit distance, obj not too tall -> can mantle
-	if (CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit), Collider->GetForwardVector(), InnerMantleLimit))
+	// check if mantleable object is too tall to climb
+	// linetrace from height limit, if hit nothing within width limit, obj not too tall -> can mantle
+	if (CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit), Collider->GetForwardVector(), MantleWidthLimit))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("mantle object too tall"));
 		return false;
 	}
 
-	// check if mantleable object is too thin (or the angle the player is looking at the obj is too extreme)
-	// from upper mantle limit, linetrace down onto mantleable object at the inner limit distance
-	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
-	if (!CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2))
+	// check if mantleable object is too thin (or the angle the player is looking at the obj is too extreme) -- essentially ensuring there is a valid point to place the player at
+	// from mantle height limit, linetrace down onto mantleable object at the width limit
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit) + (Collider->GetForwardVector() * MantleWidthLimit);
+	if (!CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2)) // distance is 1000 bc there's no minimum height limit on mantleable objects
 	{
 		UE_LOG(LogTemp, Warning, TEXT("mantle object too skinnyyyyy/weird angle"));
 		return false;
 	}
 
-	// if passed both tests, can mantle
+	// if passed both tests, can mantle! 
+	IsMantling = true;
+	// set start location for mantle movement (we only want to save this one time)
+	MantleStartPos = Collider->GetRelativeLocation();
+	// find the point on the mantleable obj we're gonna move the player to (also only want to save this one time)
+	MantleEndPos = GetMantleEndPos(TraceDownPoint, -(Collider->GetUpVector()), 1000); // using same linetrace values as in last checkmantle() call
+	MantleEndPos.Z += GetDefaultHalfHeight(); // account for the collider's location being its center
+	// switch the player mesh collisions with static objects (which all mantleable objects should be???) to overlap so the movement is smoother
+	Mesh1P->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Overlap);
+
+	// can now proceed with mantling
 	return true;
 }
 
-bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, float distance, int colorNum)
+bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, float distance, int debugColorNum)
+{
+	// linetrace values, record hit & don't hit the character
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FVector StartPos = _startPos;
+	FVector Dir = _dir;
+	FVector EndPos = StartPos + (Dir * distance);
+
+	//DrawDebugLine(GetWorld(), StartPos, EndPos, colorNum == 0 ? FColor::Green : colorNum == 1 ? FColor::Yellow : FColor::Red, false); // debug line, turn on for bugfixing
+
+	// linetrace using passed values
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params))
+	{
+		if (!Hit.GetActor()) return false; // if no actor hit, definitely can't mantle
+		if (Hit.GetActor()->ActorHasTag("Mantle")) return true; // if hit an actor with mantle tag, can mantle
+		return false; // if hit an actor without mantle tag, can't mantle
+	}
+	return false; // failsafe
+}
+
+FVector AElementalFatmanCharacter::GetMantleEndPos(FVector _startPos, FVector _dir, float distance) // virtually identical to checkmantle() but returns a fvector instead of a bool
 {
 	FHitResult Hit;
 	FCollisionQueryParams Params;
@@ -178,56 +215,59 @@ bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, flo
 	FVector Dir = _dir;
 	FVector EndPos = StartPos + (Dir * distance);
 
-	DrawDebugLine(GetWorld(), StartPos, EndPos, colorNum == 0 ? FColor::Green : colorNum == 1 ? FColor::Yellow : FColor::Red, false);
+	// not checking validity of linetrace bc this func is only called after checking the exact same linetrace is valid in ismantlevalid()
+	GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params);
+	FVector MantleLocation = Hit.ImpactPoint;
+	UE_LOG(LogTemp, Warning, TEXT("ladies and gentlemen, we did it: %f, %f, %f"), MantleLocation.X, MantleLocation.Y, MantleLocation.Z);
 
-	if (GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params))
-	{
-		if (!Hit.GetActor()) return false;
-		if (Hit.GetActor()->ActorHasTag("Mantle")) return true;
-		return false;
-	}
-	return false;
+	return MantleLocation;
 }
 
-void AElementalFatmanCharacter::Mantle()
+void AElementalFatmanCharacter::Mantle(FVector StartPos, FVector EndPos)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Mantling"));
 
-	// find the point on the mantleable obj we're gonna move the player to
-	FVector MantlePoint = GetMantlePoint();
-	MantlePoint.Z += GetDefaultHalfHeight(); // account for the collider's position being its center
+	// looping on deltatime, call function that moves player to the desired position
+	MantleDelegate.BindUFunction(this, "MantleMovement", MantleStartPos, MantleEndPos); // bind function to delegate so it can take params
+	GetWorld()->GetTimerManager().SetTimer(MantleHandler, MantleDelegate, GetWorld()->GetTime().GetDeltaWorldTimeSeconds(), true);
 
-	// set a kind of "stick to object" bool, move player up based on a duration time
-	// move player forwards/on based on a duration time
-
-	Collider->SetRelativeLocation(MantlePoint); // temp instant teleport, make lerp/animation later
-	// switch off the "stick to object" bool
+	//Collider->SetRelativeLocation(MantlePoint); // instant teleport, can be switched on for bugfixing
 }
 
-FVector AElementalFatmanCharacter::GetMantlePoint() 
+void AElementalFatmanCharacter::MantleMovement(FVector StartPos, FVector EndPos) 
 {
-	FVector MantleLocation;
+	// increase lerp alpha each frame so character will move over the course of mantleduration seconds
+	MantleAlpha += GetWorld()->GetTime().GetDeltaWorldTimeSeconds() / MantleDuration;
 
-	FHitResult Hit;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	FVector StartPos = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, UpperMantleLimit) + (Collider->GetForwardVector() * InnerMantleLimit);
-	FVector Dir = -(Collider->GetUpVector());
-	FVector EndPos = StartPos + (Dir * 1000);
-
-	// not checking validity of line trace bc we just did that with validatemantle()
-	GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params);
-	MantleLocation = Hit.ImpactPoint;
-	UE_LOG(LogTemp, Warning, TEXT("ladies and gentlemen, we did it: %f, %f, %f"), MantleLocation.X, MantleLocation.Y, MantleLocation.Z);
+	// get the normalised vector value on the curve at current alpha
+	// using a curve to get a nice smooth movement from ground to ledge where we mostly move up first, then mostly move forward at the end
+	FVector NormalizedNewPos = MantleCurve->GetVectorValue(MantleAlpha);
 	
-	return MantleLocation;
+	// de-normalize the curve value so it returns a point between startpos and endpos rather than a point between 0 and 1
+	//denormalized_d = normalized_d * (max_d - min_d) + min_d
+	FVector NewPos = NormalizedNewPos * (EndPos - StartPos) + StartPos;
+
+	// update the character's position
+	Collider->SetRelativeLocation(NewPos);
+
+	if (MantleAlpha >= 1) StopMantling();
+}
+
+void AElementalFatmanCharacter::StopJumpingOrMantling()
+{
+	StopJumping();
+	StopMantling();
 }
 
 void AElementalFatmanCharacter::StopMantling()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Stop mantling"));
-	// switch off the "stick to object" bool
+
+	// reset the mantle values & lerp alpha & clear the timer calling the lerp
+	IsMantling = false;
+	MantleAlpha = 0;
+	GetWorld()->GetTimerManager().ClearTimer(MantleHandler);
+	Mesh1P->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 }
 
 #pragma endregion
