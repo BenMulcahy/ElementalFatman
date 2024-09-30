@@ -23,6 +23,7 @@ void AFan::Setup()
 
 void AFan::InvokeSpecificMechanic()
 {
+	// todo: make it use an idle state, rotates when heated/cooled for ~3 seconds, then goes back to idle
 	switch (CurrentInteractablePips)
 	{
 	case 0:

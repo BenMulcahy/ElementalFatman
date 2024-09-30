@@ -27,7 +27,7 @@ class ELEMENTALFATMAN_API AHeatInteractable : public AActor
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this actor's properties
 	AHeatInteractable();
 
@@ -39,6 +39,10 @@ public:
 	virtual void Setup();
 
 	virtual void InvokeSpecificMechanic();
+
+	int32 GetCurrentInteractablePips()  const { return CurrentInteractablePips; }
+	bool GetIsPowerSupply() const { return IsPowerSupply; }
+	EObjectType GetObjectType() const { return ObjectType; }
 
 
 protected:
