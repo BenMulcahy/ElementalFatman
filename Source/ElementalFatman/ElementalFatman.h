@@ -9,3 +9,6 @@ DECLARE_LOG_CATEGORY_EXTERN(LogInteraction, Log, All);
 
 //Player log
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayer, Log, All);
+
+//Player animation log
+DECLARE_LOG_CATEGORY_EXTERN(LogPlayerAnimation, Log, All);

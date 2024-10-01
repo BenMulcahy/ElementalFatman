@@ -7,3 +7,4 @@ IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, ElementalFatman, "Element
 
 DEFINE_LOG_CATEGORY(LogInteraction);
 DEFINE_LOG_CATEGORY(LogPlayer);
+DEFINE_LOG_CATEGORY(LogPlayerAnimation);
