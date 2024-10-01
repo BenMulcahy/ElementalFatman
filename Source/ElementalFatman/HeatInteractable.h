@@ -41,7 +41,6 @@ public:
 	virtual void InvokeSpecificMechanic();
 
 	int32 GetCurrentInteractablePips()  const { return CurrentInteractablePips; }
-	bool GetIsPowerSupply() const { return IsPowerSupply; }
 	EObjectType GetObjectType() const { return ObjectType; }
 
 

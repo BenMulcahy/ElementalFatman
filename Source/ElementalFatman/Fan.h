@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HeatInteractable.h"
+#include "PowerSupply.h"
 #include "Fan.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELEMENTALFATMAN_API AFan : public AHeatInteractable
+class ELEMENTALFATMAN_API AFan : public APowerSupply
 {
 	GENERATED_BODY()
 
