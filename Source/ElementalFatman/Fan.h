@@ -6,9 +6,6 @@
 #include "PowerSupply.h"
 #include "Fan.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class ELEMENTALFATMAN_API AFan : public APowerSupply
 {
@@ -21,9 +18,17 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
-	int32 RotationSpeed = 3;
+	UFUNCTION()
+	void StopSpinning();
+	FTimerHandle SpinHandler;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	int32 SpinSpeed = 6;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	float SpinDuration = 2.f;
+
+	bool spinning = false;
 	bool clockwise = true;
 
 };

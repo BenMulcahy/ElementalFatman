@@ -6,9 +6,6 @@
 #include "PowerSupply.h"
 #include "Generator.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class ELEMENTALFATMAN_API AGenerator : public APowerSupply
 {
@@ -22,9 +19,4 @@ protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
-	AActor* Door;
-
-
 };

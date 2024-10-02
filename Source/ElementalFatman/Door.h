@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "PowerReceiver.h"
 #include "Door.generated.h"
 
 UCLASS()
-class ELEMENTALFATMAN_API ADoor : public AActor
+class ELEMENTALFATMAN_API ADoor : public APowerReceiver
 {
 	GENERATED_BODY()
 	
@@ -24,6 +24,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void Activate();
+	void Deactivate();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector ClosedLocation;
