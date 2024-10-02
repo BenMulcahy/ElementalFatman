@@ -111,6 +111,8 @@ protected:
 	FVector MantleStartPos;
 	FVector MantleEndPos;
 	float MantleAlpha;
+
+public:
 	UPROPERTY(VisibleAnywhere)
 	bool IsMantling;
 
