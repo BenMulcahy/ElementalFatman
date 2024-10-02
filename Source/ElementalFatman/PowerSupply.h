@@ -6,11 +6,14 @@
 #include "HeatInteractable.h"
 #include "PowerSupply.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPowerStateChanged, APowerSupply*, UpdatedPowerSupply, int32, NewPipState);
+
 UCLASS()
 class ELEMENTALFATMAN_API APowerSupply : public AHeatInteractable
 {
 	GENERATED_BODY()
 
-protected:
-	int RequiredPowerState;
+public:
+	FOnPowerStateChanged PowerStateChangedDelegate;
+
 };

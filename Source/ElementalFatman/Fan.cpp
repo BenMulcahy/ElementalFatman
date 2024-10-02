@@ -16,38 +16,72 @@ void AFan::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up fan"));
 
-	MaxInteractablePips = 1;
-	CurrentInteractablePips = 0;
+	MaxInteractablePips = 2;
+	CurrentInteractablePips = 1;
 }
 
 
 void AFan::InvokeSpecificMechanic()
 {
-	// todo: make it use an idle state, rotates when heated/cooled for ~3 seconds, then goes back to idle
+	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
+
+	// todo: probably prevent player from being able to receive pips from fans ever
 	switch (CurrentInteractablePips)
 	{
-	case 0:
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise")));
-		clockwise = true;		
+	case 0: // clockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise, %d"), CurrentInteractablePips));
+		spinning = true;
+		clockwise = true;
+		GetWorld()->GetTimerManager().SetTimer(SpinHandler, this, &AFan::StopSpinning, SpinDuration);
+		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
+
+		// prevent further interactions until fan is finished spinning
+		MaxInteractablePips = 0;
+		CurrentInteractablePips = 0;
 		break;
-	case 1:
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise")));
+	case 1: // idle
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("idling, can be heated/cooled now")));
+
+		break;
+	case 2: // anticlockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise, %d"), CurrentInteractablePips));
+		spinning = true;
 		clockwise = false;
+		GetWorld()->GetTimerManager().SetTimer(SpinHandler, this, &AFan::StopSpinning, SpinDuration);
+		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
+
+		// prevent further interactions until fan is finished spinning
+		MaxInteractablePips = 0;
+		CurrentInteractablePips = 0;
 		break;
-	default:
+	default: 
 		UE_LOG(LogTemp, Error, TEXT("Fan current pip value error!"));
 		break;
 	}
+
+
 }
 
 void AFan::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FRotator NewRotation = FRotator(0, 0, clockwise ? RotationSpeed : -RotationSpeed);
+	if (spinning)
+	{
+		FRotator NewRotation = FRotator(0, 0, clockwise ? SpinSpeed : -SpinSpeed);
 
-	FQuat QuatRotation = FQuat(NewRotation);
+		FQuat QuatRotation = FQuat(NewRotation);
 
-	Mesh->AddLocalRotation(QuatRotation, false, 0);
+		Mesh->AddLocalRotation(QuatRotation, false, 0);
+	}
+}
 
+void AFan::StopSpinning() 
+{
+	// set back to idling
+	spinning = false;
+	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
+	MaxInteractablePips = 2;
+	CurrentInteractablePips = 1;
+	PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 }

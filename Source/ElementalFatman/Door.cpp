@@ -26,6 +26,9 @@ void ADoor::Tick(float DeltaTime)
 	SetActorLocation(FMath::Lerp(ClosedLocation, OpenLocation, Position));
 }
 
+void ADoor::Activate() { Open(); }
+void ADoor::Deactivate() { Close(); }
+
 void ADoor::Open() 
 {
 	IsOpen = true;
