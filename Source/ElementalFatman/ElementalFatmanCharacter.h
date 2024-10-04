@@ -132,6 +132,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetMaxPlayerPips() const { return MaxPlayerPips; }
 
+	UFUNCTION(BlueprintCallable)
+	EInteractionType GetCurrentInteraction() const { return CurrentInteraction; }
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);

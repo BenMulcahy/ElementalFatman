@@ -12,6 +12,7 @@
 #include "ElementalFatman.h"
 #include "Engine/LocalPlayer.h"
 #include "HeatInteractable.h"
+#include "Materials/MaterialParameterCollection.h"
 #include "ElementalFatmanGameMode.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -38,8 +39,8 @@ AElementalFatmanCharacter::AElementalFatmanCharacter()
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
-	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+	Mesh1P->SetRelativeRotation(FVector(0.f,-90.0f , 0.f).Rotation());
+	Mesh1P->SetRelativeLocation(FVector(10.f, 0.f, -20.f));
 }
 
 void AElementalFatmanCharacter::BeginPlay()

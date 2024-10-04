@@ -48,6 +48,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsMantling;
 
+	UPROPERTY(BlueprintReadOnly)
+	EInteractionType CurrentPlayerInteractionType;
+
 	UPROPERTY()
 	FRotator CachedCameraRot;
 

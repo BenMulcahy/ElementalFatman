@@ -35,6 +35,7 @@ void UDaveAnimationController::NativeUpdateAnimation(float DeltaSeconds)
         CurrentMoveSpeed = PlayerCharacter->GetMovementComponent()->Velocity.Length();
         bIsFalling = PlayerCharacter->GetMovementComponent()->IsFalling();
         bIsMantling = PlayerCharacter->IsMantling;
+        CurrentPlayerInteractionType = PlayerCharacter->GetCurrentInteraction();
     }
 }
 
