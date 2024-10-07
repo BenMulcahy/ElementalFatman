@@ -42,8 +42,20 @@ void UDaveAnimationController::NativeUpdateAnimation(float DeltaSeconds)
 //Actual update code
 void UDaveAnimationController::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 {
-
+    InteractionTimer();
 }
+
+float UDaveAnimationController::InteractionTimer()
+{
+    if (CurrentPlayerInteractionType != EInteractionType::null)
+    {
+        InteractionDuration += GetWorld()->DeltaTimeSeconds;
+    }
+    else InteractionDuration = 0;
+
+    return InteractionDuration;
+}
+
 #pragma endregion
 
 #pragma region Proceduaral Animations
@@ -79,7 +91,7 @@ void UDaveAnimationController::UpdateTargetHandLocations()
             //Moving
             if (CurrentMoveSpeed >= 5.0) 
             {
-                target += ArmWalkBobScalar * ArmWalkBobCurve->GetVectorValue(GetWorld()->GetTimeSeconds()); 
+                target += ArmWalkBobScalar * (CurrentPlayerInteractionType == EInteractionType::null ? 1 : HandSwayInteractionFactor) * ArmWalkBobCurve->GetVectorValue(GetWorld()->GetTimeSeconds());
             }
             //Idle
             else target += ArmIdleBobScalar * ArmWalkBobCurve->GetVectorValue(GetWorld()->GetTimeSeconds() * 0.2);

@@ -34,6 +34,15 @@ protected:
 	/// <param name="DeltaSeconds"></param>
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds);
 
+	/// <summary>
+	/// Measure duration of heating or cold interactions
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	float InteractionTimer();
+
+	float InteractionDuration;
+
 #pragma region Vars
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -62,6 +71,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	FVector2f HandSwayMultiplier = FVector2f(25.0,50);
+
+	UPROPERTY(EditAnywhere)
+	float HandSwayInteractionFactor = 0.33f;
 
 	UPROPERTY(EditAnywhere)
 	bool bUseProceduralAnimations;
