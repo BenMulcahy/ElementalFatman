@@ -7,6 +7,12 @@
 #include "GameFramework\PawnMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+#if WITH_EDITOR
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h" 
+#endif // WITH_EDITOR
+
+
 UDaveAnimationController::UDaveAnimationController()
 {
 
@@ -18,7 +24,7 @@ void UDaveAnimationController::NativeBeginPlay()
 
     if (PlayerCharacter = Cast<AElementalFatmanCharacter>(TryGetPawnOwner()))
     {
-        UE_LOG(LogPlayerAnimation, Display, TEXT("Found Elementalfatman character"));
+        UE_LOG(LogPlayerAnimation, Log, TEXT("Found Elementalfatman character"));
         CachedCameraRot = PlayerCharacter->GetFirstPersonCameraComponent()->GetComponentRotation();
     }
     else UE_LOG(LogPlayerAnimation, Fatal, TEXT("Dave anim can't find character/is being used incorrectly?"));
@@ -77,6 +83,8 @@ FRotator UDaveAnimationController::GetCameraRotationDelta()
     return delta;
 }
 
+
+
 void UDaveAnimationController::UpdateTargetHandLocations()
 {
     FVector delta = GetCameraRotationDelta().Vector();
@@ -85,11 +93,19 @@ void UDaveAnimationController::UpdateTargetHandLocations()
     //On ground
     if (!bIsFalling)
     {
-        if (IsValid(ArmWalkBobCurve))
+        if (IsAgainstWall())
+        {
+            //Debug hit point
+            //if (GEngine) DrawDebugSphere(GetWorld(), WallHit.ImpactPoint, 3.f, 12, FColor::Red, false, 5.f, 0, 0.5f);
+            
+            //Adjust Target Y closer to player if near a wall
+            target.Y += UKismetMathLibrary::MapRangeClamped(DistToWall, 0, HandWallBraceDistance, 15.f, 5);
+        }
+        else if (IsValid(ArmWalkBobCurve))
         {
             //tweak target point with walk anim curve 
             //Moving
-            if (CurrentMoveSpeed >= 5.0) 
+            if (CurrentMoveSpeed >= 5.0)
             {
                 target += ArmWalkBobScalar * (CurrentPlayerInteractionType == EInteractionType::null ? 1 : HandSwayInteractionFactor) * ArmWalkBobCurve->GetVectorValue(GetWorld()->GetTimeSeconds());
             }
@@ -110,6 +126,33 @@ void UDaveAnimationController::UpdateTargetHandLocations()
 
     //Set Right Hand target point
     TargetHandTransform_R.SetLocation(FMath::Lerp(TargetHandTransform_R.GetLocation(), target, 1 -HandIKSmoothing));
+}
+
+bool UDaveAnimationController::IsAgainstWall()
+{
+    FHitResult hit;
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(PlayerCharacter);
+
+    FVector StartPos = PlayerCharacter->GetPawnViewLocation();
+    FVector Dir = PlayerCharacter->GetFirstPersonCameraComponent()->GetForwardVector();
+    FVector EndPos = StartPos + (Dir * HandWallBraceDistance);
+
+    if (GetWorld()->LineTraceSingleByChannel(hit, StartPos, EndPos, ECC_GameTraceChannel2, Params))
+    {
+        WallHit = hit; 
+
+        //Get Dist to wall
+        DistToWall = (PlayerCharacter->GetPawnViewLocation() - WallHit.ImpactPoint).Length();
+
+        UE_LOG(LogPlayerAnimation, Display, TEXT("Dist to wall: %f"), DistToWall);
+        return true;
+    }
+    else
+    {
+        DistToWall = 0;
+        return false;
+    }
 }
 
 #pragma endregion

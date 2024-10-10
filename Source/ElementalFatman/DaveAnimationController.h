@@ -34,14 +34,7 @@ protected:
 	/// <param name="DeltaSeconds"></param>
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds);
 
-	/// <summary>
-	/// Measure duration of heating or cold interactions
-	/// </summary>
-	/// <returns></returns>
-	UFUNCTION(BlueprintCallable)
-	float InteractionTimer();
-
-	float InteractionDuration;
+	
 
 #pragma region Vars
 protected:
@@ -75,7 +68,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float HandSwayInteractionFactor = 0.33f;
 
-	UPROPERTY(EditAnywhere)
+	/// <summary>
+	/// Distance at which players hands begin to brace themselves up against the wall
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HandWallBraceDistance = 70.f;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bUseProceduralAnimations;
 
 	UPROPERTY(EditAnywhere)
@@ -99,6 +98,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float ProceduralAnimRate = 0.0167f;
 
+	UPROPERTY(BlueprintReadOnly)
+	float DistToWall = 0.f;
+
+	FHitResult WallHit;
+	float InteractionDuration;
+
 private:
 	FTimerHandle ProceduralAnimationTimer;
 
@@ -117,6 +122,27 @@ protected:
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
 	void UpdateTargetHandLocations();
+
+	/// <summary>
+	/// Raycast to wall and check if hands should be pushed up to wall
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION()
+	bool IsAgainstWall();
+
+	/// <summary>
+	/// Measure duration of heating or cold interactions
+	/// </summary>
+	/// <returns></returns>
+	UFUNCTION(BlueprintCallable)
+	float InteractionTimer();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void ToggleProceduralAnimations()
+	{
+		bUseProceduralAnimations = !bUseProceduralAnimations; 
+		UE_LOG(LogPlayerAnimation, Warning, TEXT("Procedural Player Animations: %s"), bUseProceduralAnimations ? TEXT("On") : TEXT("Off"));
+	}
 
 #pragma endregion
 };
