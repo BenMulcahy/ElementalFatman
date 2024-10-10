@@ -4,25 +4,71 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HeatInteractable.h"
 #include "PowerSupply.h"
 #include "PowerReceiver.h"
+#include "Generator.h"
+#include "Fan.h"
 #include "PowerSystem.generated.h"
 
 UENUM()
-enum class EPowerState : int8 
+enum class ESupplyType : int8
 {
-	Generator_Off = 0,
-	Generator_On = 1,
-	Fan_Off = 1,
-	Fan_Clockwise = 0,
-	Fan_Anticlockwise = 2
+	ST_Default = 0,
+	ST_Generator = 1,
+	ST_Fan = 2,
 };
+
+UENUM()
+enum class EGeneratorState : int8
+{
+	Off = 0,
+	On = 1,
+};
+
+UENUM()
+enum class EFanState : int8
+{
+	Off = 1,
+	Clockwise = 0,
+	Anticlockwise = 2,
+};
+
+UCLASS(EditInlineNew, DefaultToInstanced)
+class ELEMENTALFATMAN_API UPowerSupplierInstance : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier")
+	APowerSupply* PowerSupply = nullptr;
+
+	UPROPERTY()
+	ESupplyType TypeOfSupply;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta=(EditCondition="TypeOfSupply == ESupplyType::ST_Generator", EditConditionHides))
+	EGeneratorState GeneratorMustBe;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Fan", EditConditionHides))
+	EFanState FanMustBe;
+	
+protected:
+
+	UPowerSupplierInstance();
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+};
+
 
 UCLASS()
 class ELEMENTALFATMAN_API APowerSystem : public AActor
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// Sets default values for this actor's properties
 	APowerSystem();
@@ -38,18 +84,17 @@ protected:
 
 	bool AreEntriesValid();
 
-	// Reference every object in the scene that will provide power to this interaction (e.g. generators, fans)
-	UPROPERTY(EditAnywhere)
-	TArray<APowerSupply*> PowerSuppliers;
+	void SetupPowerSuppliers();
 
-	// In the same order as the power suppliers, indicate what state each one should be in to supply power to this system
-	UPROPERTY(EditAnywhere)
-	TArray<EPowerState> RequiredPowerStates;
+	// Reference every object in the scene that will provide power to this interaction (e.g. generators, fans) and the power state they need to be in for the system to provide power.
+	UPROPERTY(Instanced, EditInstanceOnly)
+	TArray<UPowerSupplierInstance*> PowerSuppliers;
 
-	// Reference every object in the scene that will receive power from this interaction (e.g. doors)
+	// Reference every object in the scene that will receive power from this interaction (e.g. doors).
 	UPROPERTY(EditAnywhere)
 	TArray<APowerReceiver*> PowerReceivers;
 
-	UPROPERTY(VisibleAnywhere)
 	TArray<int32> CurrentPowerStates;
+
+	TArray<int8> RequiredPowerStates;
 };

@@ -25,7 +25,7 @@ void AFan::InvokeSpecificMechanic()
 {
 	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
 
-	// todo: probably prevent player from being able to receive pips from fans ever
+	// todo: once activated, fan moves until its mechanic is completed & then returns to idle, cannot be interacted with if its mechanic is already active
 	switch (CurrentInteractablePips)
 	{
 	case 0: // clockwise
