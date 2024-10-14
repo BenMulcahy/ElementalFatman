@@ -9,6 +9,8 @@
 #include "PowerReceiver.h"
 #include "Generator.h"
 #include "Fan.h"
+#include "PressurePlate.h"
+#include "MovingMechanism.h"
 #include "PowerSystem.generated.h"
 
 UENUM()
@@ -17,6 +19,8 @@ enum class ESupplyType : int8
 	ST_Default = 0,
 	ST_Generator = 1,
 	ST_Fan = 2,
+	ST_Pressure = 3,
+	ST_Moving = 4,
 };
 
 UENUM()
@@ -32,6 +36,20 @@ enum class EFanState : int8
 	Off = 1,
 	Clockwise = 0,
 	Anticlockwise = 2,
+};
+
+UENUM()
+enum class EPressurePlateState : int8 
+{
+	Released = 0,
+	Pressed = 1,
+};
+
+UENUM()
+enum class EMovingMechanism : int8 
+{
+	On = 0,
+	Off = 1,
 };
 
 UCLASS(EditInlineNew, DefaultToInstanced)
@@ -52,6 +70,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Fan", EditConditionHides))
 	EFanState FanMustBe;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Pressure", EditConditionHides))
+	EPressurePlateState PressurePlateMustBe;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Moving", EditConditionHides))
+	EMovingMechanism MovingMechanismMustBe;
 	
 protected:
 
@@ -76,6 +100,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION()
 	void UpdatePowerState(APowerSupply* UpdatedPowerSupply, int32 NewPowerState);

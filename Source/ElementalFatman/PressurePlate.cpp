@@ -3,37 +3,35 @@
 
 #include "PressurePlate.h"
 
-// Sets default values
-APressurePlate::APressurePlate()
+void APressurePlate::Setup()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	Super::Setup();
 
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = Root;
+	if (OverrideMesh)
+	{
+		// replace mesh with variants here
+	}
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
+	UE_LOG(LogInteraction, Warning, TEXT("setting up pressure plate"));
 
-	// construct box collider
-	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
-	BoxCollider->SetupAttachment(RootComponent);
-}
+	ObjectType = EObjectType::OT_Pressure;
 
-// Called when the game starts or when spawned
-void APressurePlate::BeginPlay()
-{
-	Super::BeginPlay();
+	MaxInteractablePips = 0;
+	CurrentInteractablePips = 0;
+
 	StartPos = Mesh->GetRelativeLocation().Z;
 }
+
+void APressurePlate::InvokeSpecificMechanic() { } // pressure plate isn't actually a heat interactable so no specific mechanic to invoke
 
 void APressurePlate::Press() 
 {
 	Mesh->SetRelativeLocation(FVector(Mesh->GetRelativeLocation().X, Mesh->GetRelativeLocation().Y, PressedPosition));
-	if (DeleteThis)	DeleteThis->Destroy();
+	PowerStateChangedDelegate.Broadcast(this, 1);
 }
 
 void APressurePlate::Reset() 
 {
 	Mesh->SetRelativeLocation(FVector(Mesh->GetRelativeLocation().X, Mesh->GetRelativeLocation().Y, StartPos));
+	PowerStateChangedDelegate.Broadcast(this, 0);
 }

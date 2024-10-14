@@ -58,8 +58,6 @@ void AFan::InvokeSpecificMechanic()
 		UE_LOG(LogTemp, Error, TEXT("Fan current pip value error!"));
 		break;
 	}
-
-
 }
 
 void AFan::Tick(const float DeltaSeconds)
@@ -81,7 +79,11 @@ void AFan::StopSpinning()
 	// set back to idling
 	spinning = false;
 	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
+	
+	// reset its pips so it can now be interacted with again
 	MaxInteractablePips = 2;
 	CurrentInteractablePips = 1;
-	PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
+	
+	// switch off the power it supplies if it's a timed fan
+	if (Timed) PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 }

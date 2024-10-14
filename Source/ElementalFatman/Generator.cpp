@@ -27,11 +27,9 @@ void AGenerator::InvokeSpecificMechanic()
 	{
 		case 0: // switch off
 			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned off")));
-			SwitchedOn = false;
 			break;
 		case 1: // switch on
 			if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("generator turned on")));
-			SwitchedOn = true;
 			break;
 		default:
 			UE_LOG(LogTemp, Error, TEXT("Generator current pip value error!"));

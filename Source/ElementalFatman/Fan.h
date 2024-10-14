@@ -18,6 +18,10 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+	// Does this fan turn off after its spin duration, shutting off power?
+	UPROPERTY(EditAnywhere, Category = Mechanics)
+	bool Timed;
+
 	UFUNCTION()
 	void StopSpinning();
 	FTimerHandle SpinHandler;

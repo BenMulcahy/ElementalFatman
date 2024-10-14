@@ -3,32 +3,13 @@
 
 #include "PowerSystem.h"
 
-UPowerSupplierInstance::UPowerSupplierInstance() 
-{
-	PowerSupply = nullptr;
-	TypeOfSupply = ESupplyType::ST_Default;
-	GeneratorMustBe = EGeneratorState::Off;
-	FanMustBe = EFanState::Off;
-}
-
-#if WITH_EDITOR
-void UPowerSupplierInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	
-	if (Cast<AGenerator>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Generator;
-	if (Cast<AFan>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Fan;
-	// add more power supply types here
-}
-#endif
-
 // Sets default values
 APowerSystem::APowerSystem()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
-
 
 // Called when the game starts or when spawned
 void APowerSystem::BeginPlay()
@@ -38,6 +19,46 @@ void APowerSystem::BeginPlay()
 	if (!AreEntriesValid()) UE_LOG(LogTemp, Error, TEXT("Invalid power system!!! Need at least one power supplier and one receiver."));
 	SetupPowerSuppliers();
 }
+
+// horrible stuff in tick, will be replaced when wires are added in future
+void APowerSystem::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	bool PoweredOn = false;
+	for (int i = 0; i < PowerSuppliers.Num(); i++)
+	{
+		PoweredOn = CurrentPowerStates[i] == RequiredPowerStates[i] ? true : false;
+
+		for (int j = 0; j < PowerReceivers.Num(); j++)
+		{
+			DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PoweredOn ? FColor::Green : FColor::Red, false);
+		}
+	}
+}
+
+UPowerSupplierInstance::UPowerSupplierInstance() 
+{
+	PowerSupply = nullptr;
+	TypeOfSupply = ESupplyType::ST_Default;
+	GeneratorMustBe = EGeneratorState::Off;
+	FanMustBe = EFanState::Off;
+	PressurePlateMustBe = EPressurePlateState::Released;
+	MovingMechanismMustBe = EMovingMechanism::Off;
+}
+
+#if WITH_EDITOR
+void UPowerSupplierInstance::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	
+	if (Cast<AGenerator>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Generator;
+	if (Cast<AFan>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Fan;
+	if (Cast<AMovingMechanism>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Moving;
+	if (Cast<APressurePlate>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Pressure;
+	// add more power supply types here
+}
+#endif
 
 bool APowerSystem::AreEntriesValid() 
 {
@@ -71,6 +92,12 @@ void APowerSystem::SetupPowerSuppliers()
 			break;
 		case ESupplyType::ST_Fan:
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->FanMustBe);
+			break;		
+		case ESupplyType::ST_Pressure:
+			RequiredPowerStates.Add((int)PowerSuppliers[i]->PressurePlateMustBe);
+			break;		
+		case ESupplyType::ST_Moving:
+			RequiredPowerStates.Add((int)PowerSuppliers[i]->MovingMechanismMustBe);
 			break;
 		default:
 			break;
@@ -88,21 +115,6 @@ void APowerSystem::UpdatePowerState(APowerSupply* UpdatedPowerSupply, int32 NewP
 		{
 			UE_LOG(LogTemp, Warning, TEXT("found correct updated supply"));
 			CurrentPowerStates[i] = NewPowerState;
-
-			switch (PowerSuppliers[i]->TypeOfSupply)
-			{
-			case ESupplyType::ST_Default:
-				UE_LOG(LogTemp, Warning, TEXT("wrong supply type"));
-				break;
-			case ESupplyType::ST_Generator:
-				UE_LOG(LogTemp, Warning, TEXT("generator state changed"));
-				break;
-			case ESupplyType::ST_Fan:
-				UE_LOG(LogTemp, Warning, TEXT("fan state changed"));
-				break;
-			default:
-				break;
-			}
 		}
 	}
 
@@ -120,4 +132,3 @@ bool APowerSystem::IsPowerSupplied()
 	if (CorrectPowerStates == RequiredPowerStates.Num()) return true;
 	else return false;
 }
-

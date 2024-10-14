@@ -19,6 +19,8 @@ enum class EObjectType : uint8
 	OT_Generator UMETA(DisplayName = "Generator"),
 	OT_Fan UMETA(DisplayName = "Fan"),
 	OT_Lava UMETA(DisplayName = "Lava"),
+	OT_Mechanism UMETA(DisplayName = "Moving Mechanism"),
+	OT_Pressure UMETA(DisplayName = "Pressure Plate"),
 };
 
 UCLASS()

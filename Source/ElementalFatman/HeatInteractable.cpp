@@ -24,6 +24,12 @@ AHeatInteractable::AHeatInteractable()
 	UIWidget->SetRelativeLocation(FVector(0, 0, 90));
 	UIWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	UIWidget->SetDrawSize(FVector2D(50, 50));
+
+	// when creating a new heat interactable bp, go to the bp editor and please:
+	// assign a mesh (e.g. cube)
+	// assign the heat interactable material
+	// assign the pip display ui to the widget
+	// copy the pip ui update function in bp
 }
 
 // Called when the game starts or when spawned

@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "PowerSupply.h"
-#include "Generator.generated.h"
+#include "MovingMechanism.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class ELEMENTALFATMAN_API AGenerator : public APowerSupply
+class ELEMENTALFATMAN_API AMovingMechanism : public APowerSupply
 {
 	GENERATED_BODY()
 
