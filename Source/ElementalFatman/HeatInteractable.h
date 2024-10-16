@@ -22,6 +22,7 @@ enum class EObjectType : uint8
 	OT_Mechanism UMETA(DisplayName = "Moving Mechanism"),
 	OT_Pressure UMETA(DisplayName = "Pressure Plate"),
 	OT_Barrel UMETA(DisplayName = "Expandable Barrel"),
+	OT_Goo UMETA(DisplayName = "Goo"),
 };
 
 UCLASS()
