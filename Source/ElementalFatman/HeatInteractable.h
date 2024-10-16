@@ -21,6 +21,7 @@ enum class EObjectType : uint8
 	OT_Lava UMETA(DisplayName = "Lava"),
 	OT_Mechanism UMETA(DisplayName = "Moving Mechanism"),
 	OT_Pressure UMETA(DisplayName = "Pressure Plate"),
+	OT_Barrel UMETA(DisplayName = "Expandable Barrel"),
 };
 
 UCLASS()
@@ -81,6 +82,8 @@ protected:
 	void UpdateColor();
 
 	void UpdateUI();
+
+	void PreventInteraction();
 
 
 public:

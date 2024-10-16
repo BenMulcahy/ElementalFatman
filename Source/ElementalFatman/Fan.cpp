@@ -36,7 +36,7 @@ void AFan::InvokeSpecificMechanic()
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 
 		// prevent further interactions until fan is finished spinning
-		MaxInteractablePips = 0;
+		PreventInteraction();
 		CurrentInteractablePips = 0;
 		break;
 	case 1: // idle
@@ -51,7 +51,7 @@ void AFan::InvokeSpecificMechanic()
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 
 		// prevent further interactions until fan is finished spinning
-		MaxInteractablePips = 0;
+		PreventInteraction();
 		CurrentInteractablePips = 0;
 		break;
 	default: 

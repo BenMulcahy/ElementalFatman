@@ -54,6 +54,10 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
+	/** Restart Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RestartAction;
+
 	UPROPERTY(VisibleAnywhere)
 	EInteractionType CurrentInteraction;
 
@@ -141,6 +145,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void Restart(const FInputActionValue& Value);
 
 	void JumpOrMantle();
 

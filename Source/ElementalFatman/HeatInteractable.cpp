@@ -146,3 +146,8 @@ void AHeatInteractable::UpdateUI()
 	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
 	ProcessEvent(UIFunction, nullptr);
 }
+
+void AHeatInteractable::PreventInteraction() 
+{
+	MaxInteractablePips = 0;
+}

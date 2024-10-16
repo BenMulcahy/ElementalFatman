@@ -85,9 +85,12 @@ void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Look);
 	
+		// Heating/Cooling
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Interact);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &AElementalFatmanCharacter::CancelInteract);
 
+		// Restart level
+		EnhancedInputComponent->BindAction(RestartAction, ETriggerEvent::Started, this, &AElementalFatmanCharacter::Restart);
 	}
 	else
 	{
@@ -121,6 +124,12 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AElementalFatmanCharacter::Restart(const FInputActionValue& Value) 
+{
+	GetWorld()->GetFirstPlayerController()->RestartLevel();
+}
+
 
 #pragma region Mantling
 
@@ -231,6 +240,7 @@ void AElementalFatmanCharacter::Mantle(FVector StartPos, FVector EndPos)
 	// looping on deltatime, call function that moves player to the desired position
 	MantleDelegate.BindUFunction(this, "MantleMovement", MantleStartPos, MantleEndPos); // bind function to delegate so it can take params
 	GetWorld()->GetTimerManager().SetTimer(MantleHandler, MantleDelegate, GetWorld()->GetTime().GetDeltaWorldTimeSeconds(), true);
+
 
 	//Collider->SetRelativeLocation(MantlePoint); // instant teleport, can be switched on for bugfixing
 }
