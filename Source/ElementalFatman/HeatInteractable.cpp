@@ -16,7 +16,7 @@ AHeatInteractable::AHeatInteractable()
 
 	// construct box collider
 	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
-	BoxCollider->SetupAttachment(RootComponent);
+	BoxCollider->SetupAttachment(Mesh);
 
 	// construct ui widget (displays pip count)
 	UIWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("UI Widget"));
@@ -150,4 +150,5 @@ void AHeatInteractable::UpdateUI()
 void AHeatInteractable::PreventInteraction() 
 {
 	MaxInteractablePips = 0;
+	CurrentInteractablePips = 0;
 }

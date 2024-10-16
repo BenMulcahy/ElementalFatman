@@ -50,6 +50,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root = nullptr;
 
 	UPROPERTY(EditAnywhere)
@@ -61,6 +62,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UWidgetComponent* UIWidget = nullptr;
 
+	UPROPERTY(VisibleAnywhere)
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
 
 

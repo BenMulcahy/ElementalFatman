@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PowerSupply.h"
+#include "Curves/CurveFloat.h"
 #include "Fan.generated.h"
 
 UCLASS()
@@ -16,23 +17,32 @@ protected:
 	void Setup();
 	void InvokeSpecificMechanic();
 
-	virtual void Tick(float DeltaTime) override;
-
 	// Does this fan turn off after its spin duration, shutting off power?
 	UPROPERTY(EditAnywhere, Category = Mechanics)
 	bool Timed;
 
 	UFUNCTION()
+	void Spin(bool clockwise);
+
 	void StopSpinning();
+
 	FTimerHandle SpinHandler;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
 	int32 SpinSpeed = 6;
 
+	// How fast (seconds) it takes for the fan to get up to full spin speed.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
-	float SpinDuration = 2.f;
+	float AccelerationDuration = 0.5f;
 
-	bool spinning = false;
-	bool clockwise = true;
+	// How long (seconds) the fan spins for.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	float SpinDuration = 4.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UCurveFloat* AccelerationCurve;
+
+	float AccelerationAlpha = 0;
+	float DecelerationAlpha = 1;
 
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PowerSupply.h"
+#include "Curves/CurveFloat.h"
 #include "PressurePlate.generated.h"
 
 UCLASS()
@@ -24,9 +25,20 @@ protected:
 	void Setup();
 	void InvokeSpecificMechanic();
 
-	UPROPERTY(EditAnywhere)
-	float PressedPosition;
+	UFUNCTION()
+	void Move(bool pressed);
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
+	float PressDuration = 0.25f;
+
+	// How far the pressure plate should move on the Z axis when pushed down (local/relative, NOT world pos).
+	UPROPERTY(EditAnywhere)
+	float PressedPos = -15;
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* PressCurve = nullptr;
+
+	FTimerHandle PressHandle;
+	float PressAlpha;
 	float StartPos;
 };

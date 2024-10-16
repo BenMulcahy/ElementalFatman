@@ -3,11 +3,6 @@
 
 #include "Lava.h"
 
-ALava::ALava() 
-{
-
-}
-
 void ALava::Setup()
 {
 	Super::Setup();
@@ -21,7 +16,7 @@ void ALava::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up lava"));
 
-	MaxInteractablePips = 0;
+	MaxInteractablePips = 1;
 	CurrentInteractablePips = 1;
 
 	// set initial lava collision state
@@ -33,11 +28,13 @@ void ALava::InvokeSpecificMechanic()
 {
 	switch (CurrentInteractablePips)
 	{
-	case 0:
+	case 0: // cooled lava
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("solidified lava")));
 		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	case 1:
-		// do nothing atm, can you re-heat lava?
+		break;
+	case 1: // heated lava
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("liquified lava")));
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		break;
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Lava current pip value error!"));

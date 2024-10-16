@@ -16,8 +16,6 @@ class ELEMENTALFATMAN_API ALava : public AHeatInteractable
 
 protected:
 	
-	ALava();
-
 	void Setup();
 	void InvokeSpecificMechanic();
 

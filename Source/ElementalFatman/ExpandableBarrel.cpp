@@ -19,7 +19,7 @@ void AExpandableBarrel::Setup()
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = 0;
 
-	InvokeSpecificMechanic(); // set starting state
+	StartSize = Mesh->GetRelativeScale3D().X;
 }
 
 void AExpandableBarrel::InvokeSpecificMechanic()
@@ -32,6 +32,7 @@ void AExpandableBarrel::InvokeSpecificMechanic()
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("expanded barrel")));
 		// TODO: replace with animation
 		GetWorld()->GetTimerManager().SetTimer(ExpandHandler, this, &AExpandableBarrel::Expand, GetWorld()->DeltaTimeSeconds, true);
+		PreventInteraction();
 		break;
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Barrel current pip value error!"));
@@ -41,14 +42,25 @@ void AExpandableBarrel::InvokeSpecificMechanic()
 
 void AExpandableBarrel::Expand() 
 {
-	if (Mesh->GetRelativeScale3D().X >= ExpandSize) 
+	// expandalpha increases from 0 to 1 over the expandduration variable
+	ExpandAlpha += GetWorld()->GetTime().GetDeltaWorldTimeSeconds() / ExpandDuration;
+
+	// take a point from the curve based on expandalpha
+	float NormalizedNewScale = ExpandCurve->GetFloatValue(ExpandAlpha);
+
+	// de-normalize the curve value so it returns a useable value rather than a point between 0 and 1
+	//denormalized_d = normalized_d * (max_d - min_d) + min_d
+	float NewScale = NormalizedNewScale * (ExpandSize - StartSize) + StartSize;
+
+
+	// update scale
+	Mesh->SetRelativeScale3D(FVector::One() * NewScale);
+
+	if (ExpandAlpha >= 1)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(ExpandHandler);
-		Tags.Add("Mantle");
-		PreventInteraction();
+		Tags.Add("Mantle"); // box becomes mantleable when expanded
 		return;
 	}
-	float newScale = Mesh->GetRelativeScale3D().X + GetWorld()->DeltaTimeSeconds;
-	Mesh->SetRelativeScale3D(FVector::One() * newScale);
 }
 

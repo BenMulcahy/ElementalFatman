@@ -4,35 +4,38 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
-#include "Curves/CurveFloat.h"
-#include "ExpandableBarrel.generated.h"
+#include "Curves/CurveVector.h"
+#include "Goo.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELEMENTALFATMAN_API AExpandableBarrel : public AHeatInteractable
+class ELEMENTALFATMAN_API AGoo : public AHeatInteractable
 {
 	GENERATED_BODY()
-	
+
 protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
-	
-	void Expand();
 
-	FTimerHandle ExpandHandler;
+	void Shrink();
+	void StopShrinking();
 
-	UPROPERTY(EditAnywhere)
-	float ExpandSize = 1.f;
+	FTimerHandle ShrinkHandler;
 
 	UPROPERTY(EditAnywhere)
-	float ExpandDuration;
+	float ShrinkDuration;
+
+	FVector StartSize;
+	UPROPERTY(EditAnywhere)
+	float ShrinkSize;
 
 	UPROPERTY(EditAnywhere)
-	UCurveFloat* ExpandCurve = nullptr;
+	UCurveVector* ShrinkCurve = nullptr;
 
-	float ExpandAlpha = 0;
-	float StartSize;
+	float ShrinkAlpha = 0;
+
+	FVector BoxExtents;
 };
