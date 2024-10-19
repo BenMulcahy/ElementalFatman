@@ -34,8 +34,8 @@ TArray<AActor*> AElementalFatmanGameMode::FindSceneInteractables()
 	
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHeatInteractable::StaticClass(), tempInteractables);
 
-	UE_LOG(LogGameMode, Log, TEXT("found: %d temp interactables"), tempInteractables.Num());
-	for (AActor* sceneActor : tempInteractables) UE_LOG(LogGameMode, Log, TEXT("found: %s"), *sceneActor->GetName());
+	//UE_LOG(LogGameMode, Log, TEXT("found: %d temp interactables"), tempInteractables.Num());
+	//for (AActor* sceneActor : tempInteractables) UE_LOG(LogGameMode, Log, TEXT("found: %s"), *sceneActor->GetName());
 
 	return tempInteractables;
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
+#include "Components/RectLightComponent.h"
 #include "Lava.generated.h"
 
 /**
@@ -16,7 +17,21 @@ class ELEMENTALFATMAN_API ALava : public AHeatInteractable
 
 protected:
 	
+	ALava();
 	void Setup();
 	void InvokeSpecificMechanic();
 
+	UFUNCTION()
+	void FadeIntensity(bool increasing);
+
+	UPROPERTY(VisibleAnywhere)
+	URectLightComponent* GlowLight = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	float GlowFadeDuration = 0.2f;
+
+	FTimerHandle FadeHandle;
+	float FadeAlpha;
+
+	float GlowIntensity;
 };
