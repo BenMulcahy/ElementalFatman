@@ -56,15 +56,19 @@ void AElementalFatmanCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// debug line checking mantleable object at foot level
 	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
 	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
 
+	// debug line checking mantleable object at eye level
 	TracePoint.Z += SearchMantleEyeLevel;
 	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
-
-	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit), Collider->GetForwardVector(), MantleWidthLimit, 1);
 	
-	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit) + (Collider->GetForwardVector() * MantleWidthLimit);
+	// debug line checking object is not too tall to mantle
+	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)), Collider->GetForwardVector(), MantleWidthLimit, 1);
+	
+	// debug line checking object is not too thin to mantle
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)) + (Collider->GetForwardVector() * MantleWidthLimit);
 	CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2);
 }
 
@@ -163,7 +167,7 @@ bool AElementalFatmanCharacter::IsMantleValid()
 {
 	// check if mantleable object is too tall to climb
 	// linetrace from height limit, if hit nothing within width limit, obj not too tall -> can mantle
-	if (CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit), Collider->GetForwardVector(), MantleWidthLimit))
+	if (CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)), Collider->GetForwardVector(), MantleWidthLimit))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("mantle object too tall"));
 		return false;
@@ -171,7 +175,7 @@ bool AElementalFatmanCharacter::IsMantleValid()
 
 	// check if mantleable object is too thin (or the angle the player is looking at the obj is too extreme) -- essentially ensuring there is a valid point to place the player at
 	// from mantle height limit, linetrace down onto mantleable object at the width limit
-	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, MantleHeightLimit) + (Collider->GetForwardVector() * MantleWidthLimit);
+	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)) + (Collider->GetForwardVector() * MantleWidthLimit);
 	if (!CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2)) // distance is 1000 bc there's no minimum height limit on mantleable objects
 	{
 		UE_LOG(LogTemp, Warning, TEXT("mantle object too skinnyyyyy/weird angle"));
@@ -203,7 +207,7 @@ bool AElementalFatmanCharacter::CheckMantle(FVector _startPos, FVector _dir, flo
 	FVector Dir = _dir;
 	FVector EndPos = StartPos + (Dir * distance);
 
-	//DrawDebugLine(GetWorld(), StartPos, EndPos, colorNum == 0 ? FColor::Green : colorNum == 1 ? FColor::Yellow : FColor::Red, false); // debug line, turn on for bugfixing
+	DrawDebugLine(GetWorld(), StartPos, EndPos, debugColorNum == 0 ? FColor::Green : debugColorNum == 1 ? FColor::Yellow : FColor::Red, false); // debug line, turn on for bugfixing
 
 	// linetrace using passed values
 	if (GetWorld()->LineTraceSingleByChannel(Hit, StartPos, EndPos, ECC_GameTraceChannel2, Params))
@@ -272,8 +276,6 @@ void AElementalFatmanCharacter::StopJumpingOrMantling()
 
 void AElementalFatmanCharacter::StopMantling()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Stop mantling"));
-
 	// reset the mantle values & lerp alpha & clear the timer calling the lerp
 	IsMantling = false;
 	MantleAlpha = 0;

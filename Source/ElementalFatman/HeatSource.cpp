@@ -5,7 +5,6 @@
 
 void AHeatSource::Setup()
 {
-	Super::Setup();
 
 	if (!OverrideMesh)
 	{
@@ -18,6 +17,9 @@ void AHeatSource::Setup()
 
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = 1;
+
+	Super::Setup();
+
 }
 
 

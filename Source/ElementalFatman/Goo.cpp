@@ -5,8 +5,6 @@
 
 void AGoo::Setup()
 {
-	Super::Setup();
-
 	if (!OverrideMesh)
 	{
 		// construct mesh here
@@ -20,6 +18,8 @@ void AGoo::Setup()
 	CurrentInteractablePips = 1;
 
 	StartSize = Mesh->GetRelativeScale3D();
+
+	Super::Setup();
 }
 
 

@@ -48,8 +48,8 @@ enum class EPressurePlateState : int8
 UENUM()
 enum class EMovingMechanism : int8 
 {
-	On = 0,
-	Off = 1,
+	On = 1,
+	Off = 0,
 };
 
 UCLASS(EditInlineNew, DefaultToInstanced)
@@ -107,10 +107,12 @@ protected:
 	void UpdatePowerState(APowerSupply* UpdatedPowerSupply, int32 NewPowerState);
 
 	bool IsPowerSupplied();
+	bool IsPowerFrozen();
 
 	bool AreEntriesValid();
 
 	void SetupPowerSuppliers();
+	void SetupPowerFreezers();
 
 	// Reference every object in the scene that will provide power to this interaction (e.g. generators, fans) and the power state they need to be in for the system to provide power.
 	UPROPERTY(Instanced, EditInstanceOnly)
@@ -123,4 +125,14 @@ protected:
 	TArray<int32> CurrentPowerStates;
 
 	TArray<int8> RequiredPowerStates;
+
+	// Reference every object in the scene that freezes the power state in this system (e.g. moving mechanism).
+	UPROPERTY(Instanced, EditInstanceOnly)
+	TArray<UPowerSupplierInstance*> PowerFreezers;
+
+	TArray<int32> CurrentFreezerStates;
+
+	TArray<int8> RequiredFreezerStates;
+
+	bool PowerStateFrozen = false;
 };

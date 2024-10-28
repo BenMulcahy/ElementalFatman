@@ -13,6 +13,7 @@ class ELEMENTALFATMAN_API APressurePlate : public APowerSupply
 	GENERATED_BODY()
 	
 public:	
+	APressurePlate();
 
 	UFUNCTION(BlueprintCallable)
 	void Press();
@@ -20,10 +21,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Reset();
 
+	bool Pressed = false;
+	void SetPressed(bool isPressed) { Pressed = isPressed; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetPressed() const { return Pressed; }
+
 protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
+
+	UPROPERTY(EditAnywhere)
+	UMeshComponent* MovableMesh = nullptr;
 
 	UFUNCTION()
 	void Move(bool pressed);

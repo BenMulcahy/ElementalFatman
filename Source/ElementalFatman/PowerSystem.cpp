@@ -17,7 +17,8 @@ void APowerSystem::BeginPlay()
 	Super::BeginPlay();
 
 	if (!AreEntriesValid()) UE_LOG(LogTemp, Error, TEXT("Invalid power system!!! Need at least one power supplier and one receiver."));
-	SetupPowerSuppliers();
+	SetupPowerSuppliers(); 
+	SetupPowerFreezers();
 }
 
 // horrible stuff in tick, will be replaced when wires are added in future
@@ -97,7 +98,43 @@ void APowerSystem::SetupPowerSuppliers()
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->PressurePlateMustBe);
 			break;		
 		case ESupplyType::ST_Moving:
+			// ignore the moving mech's power state if it's considered a power freezer rather than a power supplier
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->MovingMechanismMustBe);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void APowerSystem::SetupPowerFreezers()
+{
+	// loop through all power suppliers
+	for (int i = 0; i < PowerFreezers.Num(); i++)
+	{
+		// make a list of each power supply's current heat/cool state
+		CurrentFreezerStates.Add(PowerFreezers[i]->PowerSupply->GetCurrentInteractablePips());
+
+		// subscribe to each power supply's delegate, which broadcasts whenever the power supply is heated or cooled and returns its pip value
+		PowerFreezers[i]->PowerSupply->PowerStateChangedDelegate.AddUniqueDynamic(this, &APowerSystem::UpdatePowerState);
+
+		// create an array of desired power states, taking values from different "must be" variables depending on the "type of supply" variable
+		switch (PowerFreezers[i]->TypeOfSupply)
+		{
+		case ESupplyType::ST_Default:
+			UE_LOG(LogTemp, Warning, TEXT("invalid freezer type"));
+			break;
+		case ESupplyType::ST_Generator:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->GeneratorMustBe);
+			break;
+		case ESupplyType::ST_Fan:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->FanMustBe);
+			break;
+		case ESupplyType::ST_Pressure:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->PressurePlateMustBe);
+			break;
+		case ESupplyType::ST_Moving:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->MovingMechanismMustBe);
 			break;
 		default:
 			break;
@@ -107,18 +144,42 @@ void APowerSystem::SetupPowerSuppliers()
 
 void APowerSystem::UpdatePowerState(APowerSupply* UpdatedPowerSupply, int32 NewPowerState)
 {	
-	UE_LOG(LogTemp, Warning, TEXT("called by %s"), *UpdatedPowerSupply->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("called by %s"), *UpdatedPowerSupply->GetName());
 
 	for (int i = 0; i < PowerSuppliers.Num(); i++) 
 	{
 		if (PowerSuppliers[i]->PowerSupply == UpdatedPowerSupply)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("found correct updated supply"));
+			//UE_LOG(LogTemp, Warning, TEXT("found correct updated supply"));
 			CurrentPowerStates[i] = NewPowerState;
 		}
 	}
 
-	for (APowerReceiver* PowerReceiver : PowerReceivers) PowerReceiver->Power(IsPowerSupplied());
+	for (int i = 0; i < PowerFreezers.Num(); i++)
+	{
+		if (PowerFreezers[i]->PowerSupply == UpdatedPowerSupply) 
+		{
+			CurrentFreezerStates[i] = NewPowerState;
+		}
+	}
+
+	// check if the power system is frozen; if not, check if the power system is now powered/unpowered
+	if (!IsPowerFrozen()) for (APowerReceiver* PowerReceiver : PowerReceivers) PowerReceiver->Power(IsPowerSupplied());
+}
+
+bool APowerSystem::IsPowerFrozen() 
+{
+	// if there aren't any power freezers, power can't be frozen
+	if (RequiredFreezerStates.Num() == 0) return false;
+
+	int CorrectFreezerStates = 0;
+	for (int i = 0; i < CurrentFreezerStates.Num(); i++)
+	{
+		if (CurrentFreezerStates[i] == RequiredFreezerStates[i]) CorrectFreezerStates++;
+	}
+
+	if (CorrectFreezerStates == RequiredFreezerStates.Num()) return true;
+	else return false;
 }
 
 bool APowerSystem::IsPowerSupplied()

@@ -5,8 +5,6 @@
 
 void AGenerator::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -17,7 +15,9 @@ void AGenerator::Setup()
 	ObjectType = EObjectType::OT_Generator;
 
 	MaxInteractablePips = 1;
-	CurrentInteractablePips = 0;
+	CurrentInteractablePips = 0;	
+	
+	Super::Setup();
 }
 
 

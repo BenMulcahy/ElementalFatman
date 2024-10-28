@@ -35,9 +35,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Duration;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float OpenAmount = 5;
 	
 	float Position = 0;
 	bool IsOpen = false;

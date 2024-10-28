@@ -16,6 +16,9 @@ class ELEMENTALFATMAN_API AMovingMechanism : public APowerSupply
 
 protected:
 
+	UPROPERTY(EditAnywhere)
+	bool StartOn = true;
+
 	void Setup();
 	void InvokeSpecificMechanic();
 };

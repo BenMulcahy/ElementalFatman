@@ -5,8 +5,6 @@
 
 void AWater::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -17,9 +15,9 @@ void AWater::Setup()
 	ObjectType = EObjectType::OT_Water;
 
 	MaxInteractablePips = 2;
-	CurrentInteractablePips = 1;
+	CurrentInteractablePips = (int)StartAs;
 
-	InvokeSpecificMechanic(); // set starting state
+	Super::Setup();
 }
 
 void AWater::InvokeSpecificMechanic()

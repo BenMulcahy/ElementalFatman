@@ -3,10 +3,15 @@
 
 #include "PressurePlate.h"
 
+APressurePlate::APressurePlate() 
+{
+	// Mesh is the root component & therefore cannot be moved independently of the collider, so using a 2nd mesh component (sibling of the collider) for BPs of this script
+	MovableMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Movable Mesh"));
+	MovableMesh->SetupAttachment(RootComponent);
+}
+
 void APressurePlate::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -16,18 +21,22 @@ void APressurePlate::Setup()
 
 	ObjectType = EObjectType::OT_Pressure;
 
-	BoxCollider->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
-
 	MaxInteractablePips = 0;
 	CurrentInteractablePips = 0;
 
-	StartPos = Mesh->GetRelativeLocation().Z;
+	StartPos = MovableMesh->GetRelativeLocation().Z;
+
+	Super::Setup();
+
+	PowerStateChangedDelegate.Broadcast(this, 0);
 }
 
 void APressurePlate::InvokeSpecificMechanic() { } // pressure plate isn't actually a heat interactable so no specific mechanic to invoke
 
 void APressurePlate::Press() 
 {
+	SetPressed(true);
+
 	GetWorld()->GetTimerManager().ClearTimer(PressHandle);
 	FTimerDelegate PressDelegate;
 	PressDelegate.BindUFunction(this, "Move", true); // bind function to delegate so it can take params
@@ -38,6 +47,8 @@ void APressurePlate::Press()
 
 void APressurePlate::Reset() 
 {
+	SetPressed(false);
+
 	GetWorld()->GetTimerManager().ClearTimer(PressHandle);
 	FTimerDelegate PressDelegate;
 	PressDelegate.BindUFunction(this, "Move", false); // bind function to delegate so it can take params
@@ -58,11 +69,11 @@ void APressurePlate::Move(bool pressed)
 	//denormalized_d = normalized_d * (max_d - min_d) + min_d
 	float NewPos = NormalizedNewPos * (PressedPos - StartPos) + StartPos;
 
-	FVector MeshLocation = Mesh->GetRelativeLocation();
+	FVector MeshLocation = MovableMesh->GetRelativeLocation();
 	MeshLocation.Z = NewPos;
 
 	// update the position
-	Mesh->SetRelativeLocation(MeshLocation);
+	MovableMesh->SetRelativeLocation(MeshLocation);
 
 	// clear the timer when the animation is finished
 	if (pressed && PressAlpha >= 1) GetWorld()->GetTimerManager().ClearTimer(PressHandle);

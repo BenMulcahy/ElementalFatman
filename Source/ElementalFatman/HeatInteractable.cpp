@@ -8,15 +8,12 @@ AHeatInteractable::AHeatInteractable()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
-	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = Root;
-
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
+	RootComponent = Mesh;
 
 	// construct box collider
 	BoxCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Collider"));
-	BoxCollider->SetupAttachment(Mesh);
+	BoxCollider->SetupAttachment(RootComponent);
 
 	// construct ui widget (displays pip count)
 	UIWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("UI Widget"));
@@ -24,6 +21,8 @@ AHeatInteractable::AHeatInteractable()
 	UIWidget->SetRelativeLocation(FVector(0, 0, 90));
 	UIWidget->SetWidgetSpace(EWidgetSpace::Screen);
 	UIWidget->SetDrawSize(FVector2D(50, 50));
+
+	ObjectType = EObjectType::OT_HeatSource;
 
 	// when creating a new heat interactable bp, go to the bp editor and please:
 	// assign a mesh (e.g. cube)
@@ -40,6 +39,7 @@ void AHeatInteractable::BeginPlay()
 	Setup();
 	UpdateColor();
 	UpdateUI();
+	InvokeSpecificMechanic();
 }
 
 void AHeatInteractable::Setup() 

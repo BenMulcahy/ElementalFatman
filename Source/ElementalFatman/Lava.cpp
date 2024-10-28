@@ -21,8 +21,6 @@ ALava::ALava()
 
 void ALava::Setup()
 {
-	Super::Setup();
-
 	if (!OverrideMesh)
 	{
 		// construct mesh here
@@ -38,6 +36,8 @@ void ALava::Setup()
 	// set initial lava collision state
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	GlowIntensity = GlowLight->Intensity;
+
+	Super::Setup();
 }
 
 

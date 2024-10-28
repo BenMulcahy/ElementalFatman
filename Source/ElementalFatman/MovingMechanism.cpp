@@ -5,8 +5,6 @@
 
 void AMovingMechanism::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -17,7 +15,9 @@ void AMovingMechanism::Setup()
 	ObjectType = EObjectType::OT_Mechanism;
 
 	MaxInteractablePips = 1;
-	CurrentInteractablePips = 1;
+	CurrentInteractablePips = StartOn ? 1 : 0;
+
+	Super::Setup();
 }
 
 

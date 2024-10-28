@@ -5,8 +5,6 @@
 
 void ATorch::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -37,6 +35,8 @@ void ATorch::Setup()
 		CurrentInteractablePips = 0;
 		LightComponent->SetIntensity(EmbersIntensity);
 	}
+
+	Super::Setup();
 }
 
 

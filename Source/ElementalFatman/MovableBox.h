@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	UPhysicalMaterial* RoughMat;
 
+	UPROPERTY(EditAnywhere)
+	bool StartFrozen = false;
+
 protected:
 
 	void Setup();

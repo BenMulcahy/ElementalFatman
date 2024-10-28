@@ -5,8 +5,6 @@
 
 void AMovableBox::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -17,7 +15,9 @@ void AMovableBox::Setup()
 	ObjectType = EObjectType::OT_Box;
 
 	MaxInteractablePips = 1;
-	CurrentInteractablePips = 1;
+	CurrentInteractablePips = StartFrozen ? 0 : 1;
+
+	Super::Setup();
 }
 
 void AMovableBox::InvokeSpecificMechanic()

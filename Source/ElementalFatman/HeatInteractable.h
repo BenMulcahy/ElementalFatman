@@ -55,9 +55,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* Root = nullptr;
-
 	UPROPERTY(EditAnywhere)
 	UMeshComponent* Mesh = nullptr;
 

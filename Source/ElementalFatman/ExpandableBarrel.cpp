@@ -5,8 +5,6 @@
 
 void AExpandableBarrel::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -20,6 +18,8 @@ void AExpandableBarrel::Setup()
 	CurrentInteractablePips = 0;
 
 	StartSize = Mesh->GetRelativeScale3D().X;
+
+	Super::Setup();
 }
 
 void AExpandableBarrel::InvokeSpecificMechanic()

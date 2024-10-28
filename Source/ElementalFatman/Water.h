@@ -6,6 +6,14 @@
 #include "HeatInteractable.h"
 #include "Water.generated.h"
 
+UENUM()
+enum class EWaterState : uint8 
+{
+	Ice = 0,
+	Water = 1,
+	Steam = 2
+};
+
 /**
  * 
  */
@@ -18,5 +26,8 @@ protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
+
+	UPROPERTY(EditAnywhere)
+	EWaterState StartAs = EWaterState::Water;
 
 };

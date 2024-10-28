@@ -5,8 +5,6 @@
 
 void AFan::Setup()
 {
-	Super::Setup();
-
 	if (!OverrideMesh)
 	{
 		// construct mesh here
@@ -18,6 +16,8 @@ void AFan::Setup()
 
 	MaxInteractablePips = 2;
 	CurrentInteractablePips = 1;
+
+	Super::Setup();
 }
 
 

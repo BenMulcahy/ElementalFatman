@@ -5,8 +5,6 @@
 
 void AMetalGrate::Setup()
 {
-	Super::Setup();
-
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here
@@ -18,6 +16,8 @@ void AMetalGrate::Setup()
 
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = 1;
+
+	Super::Setup();
 }
 
 
@@ -29,6 +29,8 @@ void AMetalGrate::InvokeSpecificMechanic()
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("grate frozen/brittle")));
 		PreventInteraction();
 		break;
+	case 1: // starting state
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("grate solid")));
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Grate current pip value error!"));
 		break;
