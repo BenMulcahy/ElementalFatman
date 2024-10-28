@@ -20,6 +20,13 @@ void AMovableBox::Setup()
 	Super::Setup();
 }
 
+void AMovableBox::Tick(float DeltaSeconds) 
+{
+	Super::Tick(DeltaSeconds);
+	if (GetVelocity().Size() >= GrateBreakSpeed && !Tags.Contains("Fast")) Tags.Add("Fast");
+	else if (Tags.Contains("Fast")) Tags.Remove("Fast");
+}
+
 void AMovableBox::InvokeSpecificMechanic()
 {
 	switch (CurrentInteractablePips)

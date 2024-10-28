@@ -18,4 +18,11 @@ protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
+
+	bool Breakable;
+
+	UFUNCTION(BlueprintCallable)
+	bool GetBreakable() const { return Breakable; }
+
+	void SetBreakable(bool isBreakable) { Breakable = isBreakable; }
 };

@@ -16,6 +16,9 @@ class ELEMENTALFATMAN_API AMovableBox : public AHeatInteractable
 	GENERATED_BODY()
 
 public:
+
+	virtual void Tick(float DeltaTime) override;
+
 	UPROPERTY(EditAnywhere)
 	UPhysicalMaterial* SlipperyMat;
 
@@ -24,6 +27,12 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	bool StartFrozen = false;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Breaking Grates")
+	bool CanBreakGrates = true;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Breaking Grates", meta = (EditCondition = "CanBreakGrates", EditConditionHides))
+	float GrateBreakSpeed = 500.f;
 
 protected:
 

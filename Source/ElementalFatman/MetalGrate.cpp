@@ -27,10 +27,12 @@ void AMetalGrate::InvokeSpecificMechanic()
 	{
 	case 0: // brittle
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("grate frozen/brittle")));
+		SetBreakable(true);
 		PreventInteraction();
 		break;
 	case 1: // starting state
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("grate solid")));
+		SetBreakable(false);
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Grate current pip value error!"));
 		break;

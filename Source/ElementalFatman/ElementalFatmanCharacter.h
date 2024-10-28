@@ -99,6 +99,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Mantling", meta = (ClampMin = "0", UIMin = "0"))
 	UCurveVector* MantleCurve = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Breaking Grates", meta = (ClampMin = "0", UIMin = "0"))
+	float GrateBreakSpeed = 500.f;
 	
 	FTimerDelegate MantleDelegate;
 
@@ -119,9 +122,6 @@ protected:
 public:
 	UPROPERTY(VisibleAnywhere)
 	bool IsMantling;
-
-
-public:
 		
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -176,8 +176,6 @@ protected:
 
 	void CompleteInteraction();
 
-
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
