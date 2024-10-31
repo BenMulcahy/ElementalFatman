@@ -27,6 +27,7 @@ enum class EObjectType : uint8
 	OT_Torch UMETA(DisplayName = "Torch"),
 	OT_Lamp UMETA(DisplayName = "Lamp"),
 	OT_Grate UMETA(DisplayName = "Metal Grate"),
+	OT_Clock UMETA(DisplayName = "Clock"),
 };
 
 UCLASS()
@@ -49,46 +50,58 @@ public:
 
 	int32 GetCurrentInteractablePips()  const { return CurrentInteractablePips; }
 	EObjectType GetObjectType() const { return ObjectType; }
+	bool GetCanInteract() const { return CanInteract; }
 
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(EditAnywhere)
+	float WaitSeconds = 0;
+	bool HasWaited = false;
+
+	UPROPERTY(EditAnywhere, Category = Internal)
 	UMeshComponent* Mesh = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Internal)
 	UBoxComponent* BoxCollider = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	UWidgetComponent* UIWidget = nullptr;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Internal)
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
 
 
-	UPROPERTY(BlueprintReadOnly, Category = Mechanics)
+	UPROPERTY(BlueprintReadOnly, Category = Internal)
 	EObjectType ObjectType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	int32 CurrentInteractablePips = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	int32 MaxInteractablePips = 2;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	int32 PipsPerInteract = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mechanics)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	bool OverrideMesh = false;
 
 	void UpdateColor();
 
 	void UpdateUI();
 
-	void PreventInteraction();
+	// override to prevent player from heating/cooling individual objects in specific use cases
+	bool CanInteract = true;
+	void PreventInteraction() { CanInteract = false; }
+	void AllowInteraction() { CanInteract = true; CanHeat = true; CanCool = true; }
 
+	bool CanHeat = true;
+	void PreventHeat() { CanHeat = false; }
 
-public:
+	bool CanCool = true;
+	void PreventCool() { CanCool = false; }
+
 };

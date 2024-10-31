@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Curves/CurveFloat.h"
 #include "HeatInteractable.h"
 #include "Water.generated.h"
 
@@ -26,8 +27,32 @@ protected:
 
 	void Setup();
 	void InvokeSpecificMechanic();
+	void Melt();
+	void StopMelting();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Water | Core")
 	EWaterState StartAs = EWaterState::Water;
 
+	UPROPERTY(EditAnywhere, Category = "Water | Move When Melted")
+	FVector StartScale;	
+
+	UPROPERTY(EditAnywhere, Category = "Water | Move When Melted")
+	FVector StartLocation;
+	
+	UPROPERTY(EditAnywhere, Category = "Water | Move When Melted")
+	FVector EndScale;	
+	
+	UPROPERTY(EditAnywhere, Category = "Water | Move When Melted")
+	FVector EndLocation;
+
+	// How long does it take (seconds) for water to shift scale/location when melting.
+	UPROPERTY(EditAnywhere, Category = "Water | Move When Melted")
+	float MeltDuration = 1;
+
+	UPROPERTY(EditAnywhere, Category = Internal)
+	UCurveFloat* WaterCurve = nullptr;
+
+	FTimerHandle MeltHandle;
+	float MeltAlpha = 0;
+	bool Melted = false;
 };

@@ -15,7 +15,11 @@ void AFan::Setup()
 	UE_LOG(LogInteraction, Warning, TEXT("setting up fan"));
 
 	MaxInteractablePips = 2;
-	CurrentInteractablePips = 1;
+	CurrentInteractablePips = (int)StartState;
+
+	// prevent single direction fans from being spun in the disallowed direction
+	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventCool();
+	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventHeat();
 
 	Super::Setup();
 }
@@ -30,32 +34,29 @@ void AFan::InvokeSpecificMechanic()
 
 	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
 
-	// todo: once activated, fan moves until its mechanic is completed & then returns to idle, cannot be interacted with if its mechanic is already active
 	switch (CurrentInteractablePips)
 	{
-	case 0: // clockwise
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise, %d"), CurrentInteractablePips));
-		SpinDelegate.BindUFunction(this, "Spin", true);
+	case 0: // anticlockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise, %d pips"), CurrentInteractablePips));
+		SpinDelegate.BindUFunction(this, "Spin", false);
 		GetWorld()->GetTimerManager().SetTimer(SpinHandler, SpinDelegate, GetWorld()->DeltaTimeSeconds, true);
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 
 		// prevent further interactions until fan is finished spinning
 		PreventInteraction();
-		CurrentInteractablePips = 0;
 		break;
 	case 1: // idle
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("idling, can be heated/cooled now")));
 
 		break;
-	case 2: // anticlockwise
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("fan turning anticlockwise, %d"), CurrentInteractablePips));
-		SpinDelegate.BindUFunction(this, "Spin", false);
+	case 2: // clockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("fan turning clockwise, %d pips"), CurrentInteractablePips));
+		SpinDelegate.BindUFunction(this, "Spin", true);
 		GetWorld()->GetTimerManager().SetTimer(SpinHandler, SpinDelegate, GetWorld()->DeltaTimeSeconds, true);		
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
-
+		
 		// prevent further interactions until fan is finished spinning
 		PreventInteraction();
-		CurrentInteractablePips = 0;
 		break;
 	default: 
 		UE_LOG(LogTemp, Error, TEXT("Fan current pip value error!"));
@@ -68,7 +69,7 @@ void AFan::Spin(bool clockwise)
 	// finish spinning when the total spin duration is over
 	if (AccelerationAlpha >= SpinDuration) 
 	{ 
-		StopSpinning(); 
+		StopSpinning(clockwise); 
 		return; 
 	}
 
@@ -96,15 +97,23 @@ void AFan::Spin(bool clockwise)
 	}
 }
 
-void AFan::StopSpinning() 
+void AFan::StopSpinning(bool clockwise) 
 {
 	// set back to idling
 	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
 	
 	// reset its pips so it can now be interacted with again
-	MaxInteractablePips = 2;
 	CurrentInteractablePips = 1;
+	AllowInteraction();
+	InvokeSpecificMechanic();
+	UpdateColor();
+	UpdateUI();
 	
 	// switch off the power it supplies if it's a timed fan
 	if (Timed) PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
+
+	// apply limitations to single direction and normal fans
+	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventCool();
+	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventHeat();
+	else if (FanType == EFanLimitations::Normal) clockwise ? PreventHeat() : PreventCool();
 }

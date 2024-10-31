@@ -45,7 +45,8 @@ UPowerSupplierInstance::UPowerSupplierInstance()
 	GeneratorMustBe = EGeneratorState::Off;
 	FanMustBe = EFanState::Off;
 	PressurePlateMustBe = EPressurePlateState::Released;
-	MovingMechanismMustBe = EMovingMechanism::Off;
+	MovingMechanismMustBe = EMovingMechanismState::Off;
+	ClockMustBe = EClockState::Complete;
 }
 
 #if WITH_EDITOR
@@ -57,6 +58,7 @@ void UPowerSupplierInstance::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	if (Cast<AFan>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Fan;
 	if (Cast<AMovingMechanism>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Moving;
 	if (Cast<APressurePlate>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Pressure;
+	if (Cast<AClock>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Clock;
 	// add more power supply types here
 }
 #endif
@@ -101,6 +103,12 @@ void APowerSystem::SetupPowerSuppliers()
 			// ignore the moving mech's power state if it's considered a power freezer rather than a power supplier
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->MovingMechanismMustBe);
 			break;
+		case ESupplyType::ST_Clock:
+			// ignore the moving mech's power state if it's considered a power freezer rather than a power supplier
+			RequiredPowerStates.Add((int)PowerSuppliers[i]->ClockMustBe);
+			break;
+
+		// add more power supply types here
 		default:
 			break;
 		}

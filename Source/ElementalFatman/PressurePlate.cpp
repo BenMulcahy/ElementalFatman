@@ -12,6 +12,8 @@ APressurePlate::APressurePlate()
 
 void APressurePlate::Setup()
 {
+	PreventInteraction();
+
 	if (OverrideMesh)
 	{
 		// replace mesh with variants here

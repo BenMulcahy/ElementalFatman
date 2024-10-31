@@ -39,7 +39,22 @@ void AHeatInteractable::BeginPlay()
 	Setup();
 	UpdateColor();
 	UpdateUI();
-	InvokeSpecificMechanic();
+}
+
+void AHeatInteractable::Tick(float DeltaSeconds) 
+{
+	Super::Tick(DeltaSeconds);
+	
+	// for some reason timers don't get set when called in beginplay(), so run invokespecificmechanic() (of which several contain timers) after a short delay instead
+	if (!HasWaited) 
+	{
+		WaitSeconds += DeltaSeconds;
+		if (WaitSeconds >= 0.5f) 
+		{
+			InvokeSpecificMechanic();
+			HasWaited = true;
+		}
+	}
 }
 
 void AHeatInteractable::Setup() 
@@ -59,10 +74,13 @@ void AHeatInteractable::UpdateColor()
 int32 AHeatInteractable::ValidateInteraction(bool heating, int32 currentPlayerPips, int32 maxPlayerPips) 
 {
 	int32 playerNewPip = 0;
+	if (!CanInteract) { UE_LOG(LogInteraction, Warning, TEXT("this object cannot be interacted with!")); return playerNewPip; }
 
 	// check heating
 	if (heating)
 	{
+		if (!CanHeat) { UE_LOG(LogInteraction, Warning, TEXT("this object cannot be heated!")); return playerNewPip; }
+
 		// check object can be heated any further
 		if (CurrentInteractablePips < MaxInteractablePips)
 		{
@@ -88,6 +106,8 @@ int32 AHeatInteractable::ValidateInteraction(bool heating, int32 currentPlayerPi
 	// check cooling
 	else
 	{
+		if (!CanCool) { UE_LOG(LogInteraction, Warning, TEXT("this object cannot be cooled!")); return playerNewPip; }
+
 		// check object can be cooled any further
 		if (CurrentInteractablePips > 0)
 		{
@@ -145,10 +165,4 @@ void AHeatInteractable::UpdateUI()
 {
 	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
 	ProcessEvent(UIFunction, nullptr);
-}
-
-void AHeatInteractable::PreventInteraction() 
-{
-	MaxInteractablePips = 0;
-	CurrentInteractablePips = 0;
 }

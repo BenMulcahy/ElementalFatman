@@ -11,6 +11,7 @@
 #include "Fan.h"
 #include "PressurePlate.h"
 #include "MovingMechanism.h"
+#include "Clock.h"
 #include "PowerSystem.generated.h"
 
 UENUM()
@@ -21,6 +22,7 @@ enum class ESupplyType : int8
 	ST_Fan = 2,
 	ST_Pressure = 3,
 	ST_Moving = 4,
+	ST_Clock = 5,
 };
 
 UENUM()
@@ -34,8 +36,8 @@ UENUM()
 enum class EFanState : int8
 {
 	Off = 1,
-	Clockwise = 0,
-	Anticlockwise = 2,
+	Clockwise = 2,
+	Anticlockwise = 0,
 };
 
 UENUM()
@@ -46,10 +48,17 @@ enum class EPressurePlateState : int8
 };
 
 UENUM()
-enum class EMovingMechanism : int8 
+enum class EMovingMechanismState : int8 
 {
 	On = 1,
 	Off = 0,
+};
+
+UENUM()
+enum class EClockState : int8 
+{
+	Incomplete = 0,
+	Complete = 1
 };
 
 UCLASS(EditInlineNew, DefaultToInstanced)
@@ -75,7 +84,10 @@ public:
 	EPressurePlateState PressurePlateMustBe;
 
 	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Moving", EditConditionHides))
-	EMovingMechanism MovingMechanismMustBe;
+	EMovingMechanismState MovingMechanismMustBe;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Clock", EditConditionHides))
+	EClockState ClockMustBe;
 	
 protected:
 
