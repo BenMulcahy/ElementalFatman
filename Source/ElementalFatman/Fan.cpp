@@ -67,34 +67,34 @@ void AFan::InvokeSpecificMechanic()
 void AFan::Spin(bool clockwise)
 {
 	// finish spinning when the total spin duration is over
-	if (AccelerationAlpha >= SpinDuration) 
+	if (DecelerationAlpha <= 0) 
 	{ 
 		StopSpinning(clockwise); 
 		return; 
 	}
+	timeelapsed += GetWorld()->DeltaTimeSeconds;
 
-	else 
-	{
-		// start decelerating towards the end of the spin duration
-		if (AccelerationAlpha >= SpinDuration - AccelerationDuration) DecelerationAlpha += GetWorld()->GetTime().GetDeltaWorldTimeSeconds() / -AccelerationDuration;
 
-		// start accelerating and keep track of the time the fan has been spinning
-		AccelerationAlpha += GetWorld()->GetTime().GetDeltaWorldTimeSeconds() / AccelerationDuration;
+	// start decelerating towards the end of the spin duration
+	if (AccelerationAlpha >= SpinDuration - AccelerationDuration) DecelerationAlpha += GetWorld()->DeltaTimeSeconds / -AccelerationDuration;
+
+	// start accelerating and keep track of the time the fan has been spinning
+	AccelerationAlpha += GetWorld()->DeltaTimeSeconds;
 		
-		// take a point from the acceleration curve based on either the acceleration or deceleration alpha
-		float NormalizedNewSpeed = AccelerationCurve->GetFloatValue(AccelerationAlpha >= SpinDuration - AccelerationDuration ? DecelerationAlpha : AccelerationAlpha);
+	// take a point from the acceleration curve based on either the acceleration or deceleration alpha
+	// once acceleration is complete the alpha will just be > 1 so it'll take the point at 1 (max speed) until deceleration happens
+	float NormalizedNewSpeed = AccelerationCurve->GetFloatValue(AccelerationAlpha >= SpinDuration - AccelerationDuration ? DecelerationAlpha : AccelerationAlpha);
 
-		// de-normalize the curve value so it returns a useable value rather than a point between 0 and 1
-		//denormalized_d = normalized_d * (max_d - min_d) + min_d
-		float NewSpeed = NormalizedNewSpeed * SpinSpeed;
+	// de-normalize the curve value so it returns a useable value rather than a point between 0 and 1
+	//denormalized_d = normalized_d * (max_d - min_d) + min_d
+	float NewSpeed = NormalizedNewSpeed * SpinSpeed;
 
-		// finish spinning when the duration is complete, otherwise update fan's rotation
-		FRotator NewRotation = FRotator(0, 0, clockwise ? NewSpeed : -NewSpeed);
+	// finish spinning when the duration is complete, otherwise update fan's rotation
+	FRotator NewRotation = FRotator(0, 0, clockwise ? NewSpeed : -NewSpeed);
 
-		FQuat QuatRotation = FQuat(NewRotation);
+	FQuat QuatRotation = FQuat(NewRotation);
 
-		Mesh->AddLocalRotation(QuatRotation, false, 0);
-	}
+	Mesh->AddLocalRotation(QuatRotation, false, 0);
 }
 
 void AFan::StopSpinning(bool clockwise) 

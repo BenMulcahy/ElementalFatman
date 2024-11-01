@@ -69,4 +69,5 @@ protected:
 	float AccelerationAlpha = 0;
 	float DecelerationAlpha = 1;
 
+	float timeelapsed;
 };

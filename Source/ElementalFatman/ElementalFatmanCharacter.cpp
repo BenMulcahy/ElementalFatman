@@ -52,13 +52,13 @@ void AElementalFatmanCharacter::BeginPlay()
 	HUD = GetWorld()->GetFirstPlayerController()->GetHUD();
 }
 
-void AElementalFatmanCharacter::Tick(float DeltaTime) 
+void AElementalFatmanCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	// check if character is moving faster than a speed threshold -- if so, add the "Fast" tag so that the character can break through metal grates
-	if (GetVelocity().Size() >= GrateBreakSpeed && !Tags.Contains("Fast")) Tags.Add("Fast");
-	else if (Tags.Contains("Fast")) Tags.Remove("Fast");
+	if (GetVelocity().Size() >= GrateBreakSpeed) { if (!Tags.Contains("Fast")) Tags.Add("Fast"); }
+	else { if (Tags.Contains("Fast")) Tags.Remove("Fast"); }
 
 	// debug line checking mantleable object at foot level
 	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());

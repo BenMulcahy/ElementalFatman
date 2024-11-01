@@ -36,6 +36,17 @@ void APowerSystem::Tick(const float DeltaSeconds)
 			DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PoweredOn ? FColor::Green : FColor::Red, false);
 		}
 	}
+
+	bool PowerFrozen = false;
+	for (int i = 0; i < PowerFreezers.Num(); i++)
+	{
+		PowerFrozen = CurrentFreezerStates[i] == RequiredFreezerStates[i] ? true : false;
+
+		for (int j = 0; j < PowerReceivers.Num(); j++)
+		{
+			DrawDebugLine(GetWorld(), PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PowerFrozen ? FColor::Green : FColor::Red, false);
+		}
+	}
 }
 
 UPowerSupplierInstance::UPowerSupplierInstance() 
