@@ -70,6 +70,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Internal)
 	UWidgetComponent* UIWidget = nullptr;
 
+	UPROPERTY(EditAnywhere, Category = Internal)
+	bool UiVisible = true;
+
 	UPROPERTY(VisibleAnywhere, Category = Internal)
 	UMaterialInstanceDynamic* DynamicMat = nullptr;
 

@@ -26,25 +26,28 @@ void APowerSystem::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	bool PoweredOn = false;
-	for (int i = 0; i < PowerSuppliers.Num(); i++)
+	if (ShowDebugLine) 
 	{
-		PoweredOn = CurrentPowerStates[i] == RequiredPowerStates[i] ? true : false;
-
-		for (int j = 0; j < PowerReceivers.Num(); j++)
+		bool PoweredOn = false;
+		for (int i = 0; i < PowerSuppliers.Num(); i++)
 		{
-			DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PoweredOn ? FColor::Green : FColor::Red, false);
+			PoweredOn = CurrentPowerStates[i] == RequiredPowerStates[i] ? true : false;
+
+			for (int j = 0; j < PowerReceivers.Num(); j++)
+			{
+				DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PoweredOn ? FColor::Green : FColor::Red, false);
+			}
 		}
-	}
 
-	bool PowerFrozen = false;
-	for (int i = 0; i < PowerFreezers.Num(); i++)
-	{
-		PowerFrozen = CurrentFreezerStates[i] == RequiredFreezerStates[i] ? true : false;
-
-		for (int j = 0; j < PowerReceivers.Num(); j++)
+		bool PowerFrozen = false;
+		for (int i = 0; i < PowerFreezers.Num(); i++)
 		{
-			DrawDebugLine(GetWorld(), PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PowerFrozen ? FColor::Green : FColor::Red, false);
+			PowerFrozen = CurrentFreezerStates[i] == RequiredFreezerStates[i] ? true : false;
+
+			for (int j = 0; j < PowerReceivers.Num(); j++)
+			{
+				DrawDebugLine(GetWorld(), PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), PowerFrozen ? FColor::Green : FColor::Red, false);
+			}
 		}
 	}
 }

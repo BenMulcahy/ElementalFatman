@@ -80,15 +80,12 @@ void ATorch::FadeIntensity(bool increasing)
 		return;
 	}
 
-	else
-	{
-		// change the alpha value linearly between 0 and 1 (or 1 and 0 if fading out)
-		FadeAlpha += GetWorld()->GetTime().GetDeltaWorldTimeSeconds() / (increasing ? FadeDuration : -FadeDuration);
+	// change the alpha value linearly between 0 and 1 (or 1 and 0 if fading out)
+	FadeAlpha += GetWorld()->DeltaTimeSeconds / (increasing ? FadeDuration : -FadeDuration);
 
-		//denormalized_d = normalized_d * (max_d - min_d) + min_d
-		float NewIntensity = FadeAlpha * (LightIntensity - EmbersIntensity) + EmbersIntensity;
+	//denormalized_d = normalized_d * (max_d - min_d) + min_d
+	float NewIntensity = FadeAlpha * (LightIntensity - EmbersIntensity) + EmbersIntensity;
 
-		// update the glow light's intensity
-		LightComponent->SetIntensity(NewIntensity);
-	}
+	// update the glow light's intensity
+	LightComponent->SetIntensity(NewIntensity);
 }

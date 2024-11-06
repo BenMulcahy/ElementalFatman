@@ -1,4 +1,7 @@
 #include "HeatInteractable.h"
+#include "Kismet/KismetMathLibrary.h"
+
+
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
@@ -18,9 +21,9 @@ AHeatInteractable::AHeatInteractable()
 	// construct ui widget (displays pip count)
 	UIWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("UI Widget"));
 	UIWidget->SetupAttachment(RootComponent);
-	UIWidget->SetRelativeLocation(FVector(0, 0, 90));
-	UIWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	UIWidget->SetDrawSize(FVector2D(50, 50));
+	UIWidget->SetRelativeLocation(FVector(0, 0, 120));
+	UIWidget->SetWidgetSpace(EWidgetSpace::World);
+	UIWidget->SetDrawSize(FVector2D(150, 150));
 
 	ObjectType = EObjectType::OT_HeatSource;
 
@@ -39,6 +42,8 @@ void AHeatInteractable::BeginPlay()
 	Setup();
 	UpdateColor();
 	UpdateUI();
+
+	UIWidget->SetVisibility(UiVisible ? true : false);
 }
 
 void AHeatInteractable::Tick(float DeltaSeconds) 
@@ -55,6 +60,8 @@ void AHeatInteractable::Tick(float DeltaSeconds)
 			HasWaited = true;
 		}
 	}
+
+	UpdateUI();
 }
 
 void AHeatInteractable::Setup() 
@@ -153,7 +160,7 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 
 	// any other changes that happen to all interactables after successful interaction go here
 	UpdateColor();
-	UpdateUI();
+	//UpdateUI();
 
 	// update unique interactables
 	InvokeSpecificMechanic();
@@ -161,8 +168,21 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 
 void AHeatInteractable::InvokeSpecificMechanic() {} // virtual function for child classes
 
+#if WITH_EDITOR
 void AHeatInteractable::UpdateUI() 
 {
 	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
 	ProcessEvent(UIFunction, nullptr);
+
+
+	FVector PlayerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+	FVector MyLocation = GetActorLocation();
+	float DistToPlayerClamped = UKismetMathLibrary::MapRangeClamped((PlayerLocation - MyLocation).Length(), 100, 800, 255, 0);
+	
+	FRotator LookAtPlayer = (PlayerLocation - MyLocation).Rotation();
+
+	UIWidget->SetRelativeRotation(LookAtPlayer);
+
+	UIWidget->GetWidget()->SetColorAndOpacity(FColor(255, 255, 255, DistToPlayerClamped));
 }
+#endif

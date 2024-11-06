@@ -145,7 +145,7 @@ bool UDaveAnimationController::IsAgainstWall()
         //Get Dist to wall
         DistToWall = (PlayerCharacter->GetPawnViewLocation() - WallHit.ImpactPoint).Length();
 
-        UE_LOG(LogPlayerAnimation, Display, TEXT("Dist to wall: %f"), DistToWall);
+        //UE_LOG(LogPlayerAnimation, Display, TEXT("Dist to wall: %f"), DistToWall);
         return true;
     }
     else

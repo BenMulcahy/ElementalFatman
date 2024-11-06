@@ -126,6 +126,9 @@ protected:
 	void SetupPowerSuppliers();
 	void SetupPowerFreezers();
 
+	UPROPERTY(EditAnywhere)
+	bool ShowDebugLine = true;
+
 	// Reference every object in the scene that will provide power to this interaction (e.g. generators, fans) and the power state they need to be in for the system to provide power.
 	UPROPERTY(Instanced, EditInstanceOnly)
 	TArray<UPowerSupplierInstance*> PowerSuppliers;
