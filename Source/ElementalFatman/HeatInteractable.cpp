@@ -41,7 +41,6 @@ void AHeatInteractable::BeginPlay()
 
 	Setup();
 	UpdateColor();
-	UpdateUI();
 
 	UIWidget->SetVisibility(UiVisible ? true : false);
 }
@@ -61,7 +60,9 @@ void AHeatInteractable::Tick(float DeltaSeconds)
 		}
 	}
 
+#if WITH_EDITOR
 	UpdateUI();
+#endif
 }
 
 void AHeatInteractable::Setup() 
@@ -160,7 +161,6 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 
 	// any other changes that happen to all interactables after successful interaction go here
 	UpdateColor();
-	//UpdateUI();
 
 	// update unique interactables
 	InvokeSpecificMechanic();
@@ -168,7 +168,6 @@ void AHeatInteractable::UpdateInteractable(int32 interactionType)
 
 void AHeatInteractable::InvokeSpecificMechanic() {} // virtual function for child classes
 
-#if WITH_EDITOR
 void AHeatInteractable::UpdateUI() 
 {
 	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
@@ -185,4 +184,3 @@ void AHeatInteractable::UpdateUI()
 
 	UIWidget->GetWidget()->SetColorAndOpacity(FColor(255, 255, 255, DistToPlayerClamped));
 }
-#endif

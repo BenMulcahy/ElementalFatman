@@ -49,7 +49,6 @@ void ATorch::InvokeSpecificMechanic()
 	case 0: // switch off
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("torch turned off")));
 
-		// fade in the lava glow effect
 		FadeDelegate.BindUFunction(this, "FadeIntensity", false);
 		FadeAlpha = 1;
 		GetWorld()->GetTimerManager().SetTimer(FadeHandle, FadeDelegate, GetWorld()->DeltaTimeSeconds, true);
@@ -58,7 +57,6 @@ void ATorch::InvokeSpecificMechanic()
 	case 1: // switch on
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("torch turned on")));
 
-		// fade in the lava glow effect
 		FadeDelegate.BindUFunction(this, "FadeIntensity", true);
 		FadeAlpha = 0;
 		GetWorld()->GetTimerManager().SetTimer(FadeHandle, FadeDelegate, GetWorld()->DeltaTimeSeconds, true);
