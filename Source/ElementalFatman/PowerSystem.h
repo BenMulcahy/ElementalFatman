@@ -35,9 +35,8 @@ enum class EGeneratorState : int8
 UENUM()
 enum class EFanState : int8
 {
-	Off = 1,
-	Clockwise = 2,
-	Anticlockwise = 0,
+	Clockwise = 0,
+	Anticlockwise = 1,
 };
 
 UENUM()

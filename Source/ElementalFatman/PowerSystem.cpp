@@ -57,7 +57,7 @@ UPowerSupplierInstance::UPowerSupplierInstance()
 	PowerSupply = nullptr;
 	TypeOfSupply = ESupplyType::ST_Default;
 	GeneratorMustBe = EGeneratorState::Off;
-	FanMustBe = EFanState::Off;
+	FanMustBe = EFanState::Clockwise;
 	PressurePlateMustBe = EPressurePlateState::Released;
 	MovingMechanismMustBe = EMovingMechanismState::Off;
 	ClockMustBe = EClockState::Complete;
@@ -97,7 +97,7 @@ void APowerSystem::SetupPowerSuppliers()
 
 		// subscribe to each power supply's delegate, which broadcasts whenever the power supply is heated or cooled and returns its pip value
 		PowerSuppliers[i]->PowerSupply->PowerStateChangedDelegate.AddUniqueDynamic(this, &APowerSystem::UpdatePowerState);
-
+		FString s = "";
 		// create an array of desired power states, taking values from different "must be" variables depending on the "type of supply" variable
 		switch (PowerSuppliers[i]->TypeOfSupply)
 		{
@@ -109,16 +109,16 @@ void APowerSystem::SetupPowerSuppliers()
 			break;
 		case ESupplyType::ST_Fan:
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->FanMustBe);
+			s = PowerSuppliers[i]->FanMustBe == EFanState::Clockwise ? "clockwise" : "anticlockwise";
+			UE_LOG(LogTemp, Warning, TEXT("%s, %d"), *s, (int)PowerSuppliers[i]->FanMustBe);
 			break;		
 		case ESupplyType::ST_Pressure:
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->PressurePlateMustBe);
 			break;		
 		case ESupplyType::ST_Moving:
-			// ignore the moving mech's power state if it's considered a power freezer rather than a power supplier
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->MovingMechanismMustBe);
 			break;
 		case ESupplyType::ST_Clock:
-			// ignore the moving mech's power state if it's considered a power freezer rather than a power supplier
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->ClockMustBe);
 			break;
 
@@ -166,12 +166,13 @@ void APowerSystem::SetupPowerFreezers()
 
 void APowerSystem::UpdatePowerState(APowerSupply* UpdatedPowerSupply, int32 NewPowerState)
 {	
-	//UE_LOG(LogTemp, Warning, TEXT("called by %s"), *UpdatedPowerSupply->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("called by %s, %d pips"), *UpdatedPowerSupply->GetName(), NewPowerState);
 
 	for (int i = 0; i < PowerSuppliers.Num(); i++) 
 	{
 		if (PowerSuppliers[i]->PowerSupply == UpdatedPowerSupply)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("required pips: %d"), RequiredPowerStates[i])
 			//UE_LOG(LogTemp, Warning, TEXT("found correct updated supply"));
 			CurrentPowerStates[i] = NewPowerState;
 		}

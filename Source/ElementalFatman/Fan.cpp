@@ -14,12 +14,12 @@ void AFan::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up fan"));
 
-	MaxInteractablePips = 2;
+	MaxInteractablePips = 1;
 	CurrentInteractablePips = (int)StartState;
 
 	// prevent single direction fans from being spun in the disallowed direction
-	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventCool();
-	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventHeat();
+	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventHeat();
+	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventCool();
 
 	Super::Setup();
 }
@@ -36,25 +36,21 @@ void AFan::InvokeSpecificMechanic()
 
 	switch (CurrentInteractablePips)
 	{
-	case 0: // anticlockwise
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning anticlockwise, %d pips"), CurrentInteractablePips));
-		SpinDelegate.BindUFunction(this, "Spin", false);
+	case 0: // clockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, FString::Printf(TEXT("fan turning clockwise, %d pips"), CurrentInteractablePips));
+		SpinDelegate.BindUFunction(this, "Spin", true);
 		GetWorld()->GetTimerManager().SetTimer(SpinHandler, SpinDelegate, GetWorld()->DeltaTimeSeconds, true);
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
 
 		// prevent further interactions until fan is finished spinning
 		PreventInteraction();
 		break;
-	case 1: // idle
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("idling, can be heated/cooled now")));
-
-		break;
-	case 2: // clockwise
-		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("fan turning clockwise, %d pips"), CurrentInteractablePips));
-		SpinDelegate.BindUFunction(this, "Spin", true);
-		GetWorld()->GetTimerManager().SetTimer(SpinHandler, SpinDelegate, GetWorld()->DeltaTimeSeconds, true);		
+	case 1: // anticlockwise
+		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("fan turning anticlockwise, %d pips"), CurrentInteractablePips));
+		SpinDelegate.BindUFunction(this, "Spin", false);
+		GetWorld()->GetTimerManager().SetTimer(SpinHandler, SpinDelegate, GetWorld()->DeltaTimeSeconds, true);
 		PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
-		
+
 		// prevent further interactions until fan is finished spinning
 		PreventInteraction();
 		break;
@@ -69,11 +65,10 @@ void AFan::Spin(bool clockwise)
 	// finish spinning when the total spin duration is over
 	if (DecelerationAlpha <= 0) 
 	{ 
+		UE_LOG(LogTemp, Warning, TEXT("total spin time: %f seconds"), AccelerationAlpha);
 		StopSpinning(clockwise); 
 		return; 
 	}
-	timeelapsed += GetWorld()->DeltaTimeSeconds;
-
 
 	// start decelerating towards the end of the spin duration
 	if (AccelerationAlpha >= SpinDuration - AccelerationDuration) DecelerationAlpha += GetWorld()->DeltaTimeSeconds / -AccelerationDuration;
@@ -90,7 +85,7 @@ void AFan::Spin(bool clockwise)
 	float NewSpeed = NormalizedNewSpeed * SpinSpeed;
 
 	// finish spinning when the duration is complete, otherwise update fan's rotation
-	FRotator NewRotation = FRotator(0, 0, clockwise ? NewSpeed : -NewSpeed);
+	FRotator NewRotation = FRotator(0, 0, clockwise ? -NewSpeed : NewSpeed);
 
 	FQuat QuatRotation = FQuat(NewRotation);
 
@@ -103,17 +98,24 @@ void AFan::StopSpinning(bool clockwise)
 	GetWorld()->GetTimerManager().ClearTimer(SpinHandler);
 	
 	// reset its pips so it can now be interacted with again
-	CurrentInteractablePips = 1;
 	AllowInteraction();
-	InvokeSpecificMechanic();
 	UpdateColor();
-	UpdateUI();
 	
-	// switch off the power it supplies if it's a timed fan
-	if (Timed) PowerStateChangedDelegate.Broadcast(this, CurrentInteractablePips);
+	// now spin in reverse/unpower the power system if it's a timed fan
+	if (Timed) 
+	{
+		if (!TimedOut) // toggle to ensure the fan only spins in reverse once after each user input
+		{
+			CurrentInteractablePips = clockwise ? 1 : 0;
+			InvokeSpecificMechanic();
+			UpdateColor();
+			TimedOut = true;
+		}
+		else TimedOut = false;
+	}
 
 	// apply limitations to single direction and normal fans
-	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventCool();
-	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventHeat();
-	else if (FanType == EFanLimitations::Normal) clockwise ? PreventHeat() : PreventCool();
+	if (FanType == EFanLimitations::SingleDirectionClockwise) PreventHeat();
+	else if (FanType == EFanLimitations::SingleDirectionAnticlockwise) PreventCool();
+	else if (FanType == EFanLimitations::Normal) clockwise ? PreventCool() : PreventHeat();
 }

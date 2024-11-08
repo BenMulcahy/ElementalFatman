@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HeatInteractable.h"
-#include "Components/LightComponent.h"
+#include "Components/LocalLightComponent.h"
 #include "Torch.generated.h"
 
 /**
@@ -41,7 +41,9 @@ protected:
 	UPROPERTY(EditAnywhere, meta=(EditCondition="HasEmbers", EditConditionHides))
 	float EmbersIntensity;
 
+	float LightSize;
+
 	float LightIntensity;
 
-	ULightComponent* LightComponent = nullptr;
+	ULocalLightComponent* LightComponent = nullptr;
 };

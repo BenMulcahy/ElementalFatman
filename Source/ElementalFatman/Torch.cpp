@@ -14,11 +14,12 @@ void ATorch::Setup()
 
 	ObjectType = EObjectType::OT_Torch;
 
-	if (!GetComponentByClass<ULightComponent>()) { UE_LOG(LogTemp, Error, TEXT("Every torch MUST have a light component! Interacting with this torch will crash the editor!")); }
+	if (!GetComponentByClass<ULocalLightComponent>()) { UE_LOG(LogTemp, Error, TEXT("Every torch MUST have a light component! Interacting with this torch will crash the editor!")); }
 	else 
 	{
-		LightComponent = GetComponentByClass<ULightComponent>();
+		LightComponent = GetComponentByClass<ULocalLightComponent>();
 		LightIntensity = LightComponent->Intensity;
+		LightSize = LightComponent->AttenuationRadius;
 	}
 
 	if (!HasEmbers) EmbersIntensity = 0;
@@ -29,11 +30,13 @@ void ATorch::Setup()
 	{
 		CurrentInteractablePips = 1;
 		LightComponent->SetIntensity(LightIntensity);
+		LightComponent->SetAttenuationRadius(LightSize);
 	}
 	else 
 	{
 		CurrentInteractablePips = 0;
 		LightComponent->SetIntensity(EmbersIntensity);
+		LightComponent->SetAttenuationRadius(100);
 	}
 
 	Super::Setup();
@@ -51,7 +54,7 @@ void ATorch::InvokeSpecificMechanic()
 
 		FadeDelegate.BindUFunction(this, "FadeIntensity", false);
 		FadeAlpha = 1;
-		GetWorld()->GetTimerManager().SetTimer(FadeHandle, FadeDelegate, GetWorld()->DeltaTimeSeconds, true);
+		GetWorld()->GetTimerManager().SetTimer(FadeHandle, FadeDelegate, GetWorld()->DeltaTimeSeconds, true); 
 
 		break;
 	case 1: // switch on
@@ -75,6 +78,7 @@ void ATorch::FadeIntensity(bool increasing)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FadeHandle);
 		LightComponent->SetIntensity(increasing ? LightIntensity : EmbersIntensity); // ensure the end value is exact
+		LightComponent->SetAttenuationRadius(increasing ? LightSize : 100);
 		return;
 	}
 
@@ -83,7 +87,9 @@ void ATorch::FadeIntensity(bool increasing)
 
 	//denormalized_d = normalized_d * (max_d - min_d) + min_d
 	float NewIntensity = FadeAlpha * (LightIntensity - EmbersIntensity) + EmbersIntensity;
+	float NewSize = FadeAlpha * (LightSize - 100) + 100;
 
 	// update the glow light's intensity
 	LightComponent->SetIntensity(NewIntensity);
+	LightComponent->SetAttenuationRadius(NewSize);
 }

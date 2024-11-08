@@ -10,9 +10,8 @@
 UENUM()
 enum class EFanStartState : int8
 {
-	Off = 1,
 	Clockwise = 0,
-	Anticlockwise = 2,
+	Anticlockwise = 1,
 };
 
 UENUM()
@@ -35,11 +34,13 @@ protected:
 	void InvokeSpecificMechanic();
 
 	UPROPERTY(EditAnywhere, Category = "Fan | Core")
-	EFanStartState StartState = EFanStartState::Off;
+	EFanStartState StartState = EFanStartState::Clockwise;
 
 	// Does this fan turn off after its spin duration, shutting off power?
 	UPROPERTY(EditAnywhere, Category = "Fan | Core")
 	bool Timed;
+
+	bool TimedOut = false;
 
 	// Does this fan have any special conditions? (Normal fans can be spun in both directions once).
 	UPROPERTY(EditAnywhere, Category = "Fan | Core")
@@ -68,6 +69,4 @@ protected:
 
 	float AccelerationAlpha = 0;
 	float DecelerationAlpha = 1;
-
-	float timeelapsed;
 };

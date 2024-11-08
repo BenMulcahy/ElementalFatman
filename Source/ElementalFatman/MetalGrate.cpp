@@ -33,6 +33,7 @@ void AMetalGrate::InvokeSpecificMechanic()
 	case 1: // starting state
 		if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("grate solid")));
 		SetBreakable(false);
+		break;
 	default:
 		UE_LOG(LogTemp, Error, TEXT("Grate current pip value error!"));
 		break;

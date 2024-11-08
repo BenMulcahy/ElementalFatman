@@ -49,16 +49,16 @@ void AHeatInteractable::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	
-	// for some reason timers don't get set when called in beginplay(), so run invokespecificmechanic() (of which several contain timers) after a short delay instead
-	if (!HasWaited) 
-	{
-		WaitSeconds += DeltaSeconds;
-		if (WaitSeconds >= 0.5f) 
-		{
-			InvokeSpecificMechanic();
-			HasWaited = true;
-		}
-	}
+	//// for some reason timers don't get set when called in beginplay(), so run invokespecificmechanic() (of which several contain timers) after a short delay instead
+	//if (!HasWaited) 
+	//{
+	//	WaitSeconds += DeltaSeconds;
+	//	if (WaitSeconds >= 0.5f) 
+	//	{
+	//		InvokeSpecificMechanic();
+	//		HasWaited = true;
+	//	}
+	//}
 
 #if WITH_EDITOR
 	UpdateUI();
@@ -170,17 +170,20 @@ void AHeatInteractable::InvokeSpecificMechanic() {} // virtual function for chil
 
 void AHeatInteractable::UpdateUI() 
 {
-	UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
-	ProcessEvent(UIFunction, nullptr);
+	if (UIWidget) 
+	{
+		UFunction* UIFunction = FindFunction(TEXT("UpdatePipUI"));
+		ProcessEvent(UIFunction, nullptr);
 
 
-	FVector PlayerLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
-	FVector MyLocation = GetActorLocation();
-	float DistToPlayerClamped = UKismetMathLibrary::MapRangeClamped((PlayerLocation - MyLocation).Length(), 100, 800, 255, 0);
+		FVector PlayerPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+		FVector UIPos = GetActorLocation();
+		float DistToPlayerClamped = UKismetMathLibrary::MapRangeClamped((PlayerPos - UIPos).Length(), 100, 500, 255, 0);
 	
-	FRotator LookAtPlayer = (PlayerLocation - MyLocation).Rotation();
+		FRotator LookAtPlayer = (PlayerPos - UIPos).Rotation();
 
-	UIWidget->SetRelativeRotation(LookAtPlayer);
+		UIWidget->SetWorldRotation(LookAtPlayer);
 
-	UIWidget->GetWidget()->SetColorAndOpacity(FColor(255, 255, 255, DistToPlayerClamped));
+		if (UIWidget->GetWidget()) UIWidget->GetWidget()->SetColorAndOpacity(FColor(255, 255, 255, DistToPlayerClamped));
+	}
 }
