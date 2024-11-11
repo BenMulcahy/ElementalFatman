@@ -23,6 +23,7 @@ enum class ESupplyType : int8
 	ST_Pressure = 3,
 	ST_Moving = 4,
 	ST_Clock = 5,
+	ST_Switch = 6,
 };
 
 UENUM()
@@ -60,6 +61,14 @@ enum class EClockState : int8
 	Complete = 1
 };
 
+UENUM()
+enum class ESwitchState : int8
+{
+	Left = 0,
+	Neutral = 1,
+	Right = 2
+};
+
 UCLASS(EditInlineNew, DefaultToInstanced)
 class ELEMENTALFATMAN_API UPowerSupplierInstance : public UObject
 {
@@ -87,6 +96,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Clock", EditConditionHides))
 	EClockState ClockMustBe;
+
+	UPROPERTY(EditAnywhere, Category = "New Power Supplier", meta = (EditCondition = "TypeOfSupply == ESupplyType::ST_Switch", EditConditionHides))
+	ESwitchState SwitchMustBe;
 	
 protected:
 

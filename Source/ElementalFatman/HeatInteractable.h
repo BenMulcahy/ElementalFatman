@@ -28,6 +28,7 @@ enum class EObjectType : uint8
 	OT_Lamp UMETA(DisplayName = "Lamp"),
 	OT_Grate UMETA(DisplayName = "Metal Grate"),
 	OT_Clock UMETA(DisplayName = "Clock"),
+	OT_Switch UMETA(DisplayName = "Three-Way Switch"),
 };
 
 UCLASS()

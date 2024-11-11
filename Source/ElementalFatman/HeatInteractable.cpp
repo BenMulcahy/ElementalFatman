@@ -24,6 +24,7 @@ AHeatInteractable::AHeatInteractable()
 	UIWidget->SetRelativeLocation(FVector(0, 0, 120));
 	UIWidget->SetWidgetSpace(EWidgetSpace::World);
 	UIWidget->SetDrawSize(FVector2D(150, 150));
+	UIWidget->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 
 	ObjectType = EObjectType::OT_HeatSource;
 

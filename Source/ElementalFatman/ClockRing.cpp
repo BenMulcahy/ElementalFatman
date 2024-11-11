@@ -3,6 +3,11 @@
 
 #include "ClockRing.h"
 
+AClockRing::AClockRing() 
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
 void AClockRing::BeginPlay()
 {
 	Super::BeginPlay();
@@ -15,23 +20,62 @@ void AClockRing::BeginPlay()
 	LastRotation = FRotator(0, StartAngle, 0);
 	SetActorRelativeRotation(LastRotation);
 
-	// subscribe to each fan's delegate, which broadcasts whenever the fan is heated or cooled and returns its pip value
-	for (int i = 0; i < Fans.Num(); i++)
+	// subscribe to each switch's delegate, which broadcasts whenever the switch is spun and its direction
+	for (int i = 0; i < Switches.Num(); i++)
 	{
-		Fans[i].Fan->PowerStateChangedDelegate.AddUniqueDynamic(this, &AClockRing::ChangeRotation);
+		Switches[i].Switch->SwitchSpinningDelegate.AddUniqueDynamic(this, &AClockRing::ChangeRotation);
+	}
+
+	SetupPressurePlates();
+}
+
+void AClockRing::Tick(float DeltaSeconds) 
+{
+	Super::Tick(DeltaSeconds);
+
+	if (ShowDebugLine)
+	{
+		for (int i = 0; i < Switches.Num(); i++)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("peep"));
+			DrawDebugLine(GetWorld(), Switches[i].Switch->GetActorLocation(), FindComponentByTag<UStaticMeshComponent>("Pointer")->GetComponentLocation(), Switches[i].SwitchDisconnected ? FColor::Red : FColor::Yellow, false);
+			if (Switches[i].ControlledByPressurePlate) DrawDebugLine(GetWorld(), Switches[i].Switch->GetActorLocation(), Switches[i].PressurePlate->GetActorLocation(), Switches[i].SwitchDisconnected ? FColor::Red : FColor::Green, false);
+		}
 	}
 }
 
-void AClockRing::ChangeRotation(APowerSupply* SpinningFan, int32 SpinDirection)
+void AClockRing::SetupPressurePlates() 
+{	
+	// for each switch with a pressure plate component, subscribe to the pressure plate's delegate, which broadcasts whenever the pressure plate is activated/deactivated
+	for (int i = 0; i < Switches.Num(); i++)
+	{
+		if (Switches[i].ControlledByPressurePlate) Switches[i].PressurePlate->PowerStateChangedDelegate.AddUniqueDynamic(this, &AClockRing::DisconnectSwitch);
+	}
+}
+
+void AClockRing::DisconnectSwitch(APowerSupply* UpdatedPressurePlate, int32 NewPipState)
+{
+	// find the switch whose pressure plate's state changed, disconnect or re-connect that switch to the clock ring depending on the updated pressure plate's pip state
+	for (int i = 0; i < Switches.Num(); i++)
+	{
+		if (Switches[i].PressurePlate == UpdatedPressurePlate) 
+		{
+			Switches[i].SwitchDisconnected = NewPipState == 1 ? true : false;
+		}
+	}
+}
+
+void AClockRing::ChangeRotation(AThreeWaySwitch* ChangedSwitch, bool SpinDirection)
 {
 	FTimerDelegate TurnDelegate;
 	TurnAlpha = 0;
 
-	for (int i = 0; i < Fans.Num(); i++)
+	for (int i = 0; i < Switches.Num(); i++)
 	{
-		if (Fans[i].Fan == SpinningFan) // check which fan is spinning for instances where multiple fans affect 1 ring
+		if (Switches[i].Switch == ChangedSwitch) // check which switch is spinning for instances where multiple switches affect 1 ring
 		{
-			float NewYaw = LastRotation.Yaw + (SpinDirection == 0 ? -Fans[i].TurnAngle : Fans[i].TurnAngle);
+			if (Switches[i].SwitchDisconnected) return; // don't spin the ring if the switch has been disconnected
+			float NewYaw = LastRotation.Yaw + (SpinDirection ? Switches[i].TurnAngle : -Switches[i].TurnAngle);
 			TurnDelegate.BindUFunction(this, "Turn", NewYaw);
 			GetWorld()->GetTimerManager().SetTimer(TurnHandler, TurnDelegate, GetWorld()->DeltaTimeSeconds, true);
 		}

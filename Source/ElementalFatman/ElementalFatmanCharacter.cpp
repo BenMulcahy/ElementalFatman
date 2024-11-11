@@ -13,6 +13,7 @@
 #include "Engine/LocalPlayer.h"
 #include "HeatInteractable.h"
 #include "Materials/MaterialParameterCollection.h"
+#include "Components/WidgetComponent.h"
 #include "ElementalFatmanGameMode.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);

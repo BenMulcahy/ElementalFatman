@@ -61,6 +61,7 @@ UPowerSupplierInstance::UPowerSupplierInstance()
 	PressurePlateMustBe = EPressurePlateState::Released;
 	MovingMechanismMustBe = EMovingMechanismState::Off;
 	ClockMustBe = EClockState::Complete;
+	SwitchMustBe = ESwitchState::Neutral;
 }
 
 #if WITH_EDITOR
@@ -73,6 +74,7 @@ void UPowerSupplierInstance::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	if (Cast<AMovingMechanism>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Moving;
 	if (Cast<APressurePlate>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Pressure;
 	if (Cast<AClock>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Clock;
+	if (Cast<AThreeWaySwitch>(PowerSupply)) TypeOfSupply = ESupplyType::ST_Switch;
 	// add more power supply types here
 }
 #endif
@@ -121,6 +123,9 @@ void APowerSystem::SetupPowerSuppliers()
 		case ESupplyType::ST_Clock:
 			RequiredPowerStates.Add((int)PowerSuppliers[i]->ClockMustBe);
 			break;
+		case ESupplyType::ST_Switch:
+			RequiredPowerStates.Add((int)PowerSuppliers[i]->SwitchMustBe);
+			break;
 
 		// add more power supply types here
 		default:
@@ -158,6 +163,14 @@ void APowerSystem::SetupPowerFreezers()
 		case ESupplyType::ST_Moving:
 			RequiredFreezerStates.Add((int)PowerFreezers[i]->MovingMechanismMustBe);
 			break;
+		case ESupplyType::ST_Clock:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->ClockMustBe);
+			break;
+		case ESupplyType::ST_Switch:
+			RequiredFreezerStates.Add((int)PowerFreezers[i]->SwitchMustBe);
+			break;
+
+		// add more power freezer types here
 		default:
 			break;
 		}
