@@ -37,7 +37,6 @@ void AClockRing::Tick(float DeltaSeconds)
 	{
 		for (int i = 0; i < Switches.Num(); i++)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("peep"));
 			DrawDebugLine(GetWorld(), Switches[i].Switch->GetActorLocation(), FindComponentByTag<UStaticMeshComponent>("Pointer")->GetComponentLocation(), Switches[i].SwitchDisconnected ? FColor::Red : FColor::Yellow, false);
 			if (Switches[i].ControlledByPressurePlate) DrawDebugLine(GetWorld(), Switches[i].Switch->GetActorLocation(), Switches[i].PressurePlate->GetActorLocation(), Switches[i].SwitchDisconnected ? FColor::Red : FColor::Green, false);
 		}

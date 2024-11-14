@@ -61,6 +61,8 @@ void AElementalFatmanCharacter::Tick(float DeltaTime)
 	if (GetVelocity().Size() >= GrateBreakSpeed) { if (!Tags.Contains("Fast")) Tags.Add("Fast"); }
 	else { if (Tags.Contains("Fast")) Tags.Remove("Fast"); }
 
+	//////////////////////////////////////////////////////////////////// mantling debug lines
+
 	// debug line checking mantleable object at foot level
 	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
 	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
@@ -91,6 +93,10 @@ void AElementalFatmanCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Move);
 
+		// Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AElementalFatmanCharacter::Sprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AElementalFatmanCharacter::StopSprinting);
+
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AElementalFatmanCharacter::Look);
 	
@@ -120,6 +126,17 @@ void AElementalFatmanCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
 }
+
+void AElementalFatmanCharacter::Sprint(const FInputActionValue& Value) 
+{
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void AElementalFatmanCharacter::StopSprinting(const FInputActionValue& Value) 
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
 
 void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 {

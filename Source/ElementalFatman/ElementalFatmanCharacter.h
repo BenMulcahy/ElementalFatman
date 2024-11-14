@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "HeatInteractable.h"
 #include "Curves/CurveVector.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ElementalFatmanCharacter.generated.h"
 
 class UInputComponent;
@@ -42,6 +43,8 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = Collider)
 	UCapsuleComponent* Collider;
 
+	UCharacterMovementComponent* CharacterMovement;
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
@@ -49,6 +52,10 @@ class AElementalFatmanCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
 	
 	/** Interact(Heat/Cool) Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -58,7 +65,6 @@ class AElementalFatmanCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RestartAction;
 
-	UPROPERTY(VisibleAnywhere)
 	EInteractionType CurrentInteraction;
 
 
@@ -69,6 +75,13 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaTime);
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Movement", meta = (ClampMin = "0", UIMin = "0"))
+	float WalkSpeed = 250;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Movement", meta = (ClampMin = "0", UIMin = "0"))
+	float SprintSpeed = 400;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mechanics | Abilities", meta = (ClampMin = "0", UIMin = "0"))
 	float AbilityRange = 300;
@@ -114,20 +127,17 @@ protected:
 	AHUD* HUD;
 
 	float CharacterGravity;
-	UPROPERTY(VisibleAnywhere)
 	FVector MantleStartPos;
 	FVector MantleEndPos;
 	float MantleAlpha;
+	bool IsMantling;
 
 public:
-	UPROPERTY(VisibleAnywhere)
-	bool IsMantling;
-		
+
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class AElementalFatmanGameMode> CustomGameModeInstance = nullptr;
 
 	UFUNCTION(BlueprintCallable)
@@ -139,9 +149,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	EInteractionType GetCurrentInteraction() const { return CurrentInteraction; }
 
+	bool GetIsMantling() const { return IsMantling; }
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
+
+	void Sprint(const FInputActionValue& Value);
+	void StopSprinting(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
