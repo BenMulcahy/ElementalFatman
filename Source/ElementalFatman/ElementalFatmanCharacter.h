@@ -185,11 +185,16 @@ protected:
 
 	void UpdateInteraction(EInteractionType interaction);
 
+	bool CheckCrosshairOverInteractable(bool interacting);
+
 	void CheckIfHittingInteractable();
 
 	void BeginInteraction();
 
 	void CompleteInteraction();
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor UpdateCrosshairColor();
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;

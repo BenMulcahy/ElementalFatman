@@ -360,7 +360,7 @@ void AElementalFatmanCharacter::UpdateInteraction(EInteractionType interaction)
 	}
 }
 
-void AElementalFatmanCharacter::CheckIfHittingInteractable() 
+bool AElementalFatmanCharacter::CheckCrosshairOverInteractable(bool interacting) 
 {
 	// linetrace parameters
 	FHitResult hit;
@@ -373,18 +373,31 @@ void AElementalFatmanCharacter::CheckIfHittingInteractable()
 
 	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
 
+
 	// line trace, either find a heatinteractable actor or set the currently focused actor to null
 	if (GetWorld()->LineTraceSingleByChannel(hit, startPos, endPos, ECC_GameTraceChannel2, params))
 	{
 		if (Cast<AHeatInteractable>(hit.GetActor()))
 		{
-			FocusedActor = Cast<AHeatInteractable>(hit.GetActor());
-			// update crosshair colour
+			if (interacting) FocusedActor = Cast<AHeatInteractable>(hit.GetActor());
+			return true;
 		}
-		else FocusedActor = nullptr; 
+		else 
+		{
+			if (interacting) FocusedActor = nullptr;
+			return false;
+		}
 	}
-	else FocusedActor = nullptr;
+	else 
+	{ 
+		if (interacting) FocusedActor = nullptr;
+		return false;
+	}
+}
 
+void AElementalFatmanCharacter::CheckIfHittingInteractable() 
+{
+	CheckCrosshairOverInteractable(true);
 	BeginInteraction();
 	LastFocusedActor = FocusedActor;
 }
@@ -392,10 +405,10 @@ void AElementalFatmanCharacter::CheckIfHittingInteractable()
 void AElementalFatmanCharacter::BeginInteraction() 
 {
 	// if not looking at valid actor, stop here & clear the timer
-	if (!FocusedActor) GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler);
+	if (!FocusedActor) { GetWorld()->GetTimerManager().ClearTimer(InteractChargeHandler); return; }
 
 	// check the currently focused actor is the same as whatever player last focused on
-	else if (FocusedActor == LastFocusedActor)
+	if (FocusedActor == LastFocusedActor)
 	{
 		// if the timer hasn't already started, start the timer			
 		if (!GetWorld()->GetTimerManager().IsTimerActive(InteractChargeHandler))
@@ -425,6 +438,12 @@ void AElementalFatmanCharacter::CompleteInteraction()
 	CurrentPlayerPips += pipDiff;
 
 	// call player pip ui update here please
+}
+
+FLinearColor AElementalFatmanCharacter::UpdateCrosshairColor() 
+{
+	FLinearColor NewColor = CheckCrosshairOverInteractable(false) ? FLinearColor::Green : FLinearColor::White;
+	return NewColor;
 }
 
 #pragma endregion
