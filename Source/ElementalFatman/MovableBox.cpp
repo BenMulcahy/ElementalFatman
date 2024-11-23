@@ -18,6 +18,7 @@ void AMovableBox::Setup()
 	CurrentInteractablePips = StartFrozen ? 0 : 1;
 
 	Super::Setup();
+	InvokeSpecificMechanic();
 }
 
 void AMovableBox::Tick(float DeltaSeconds) 

@@ -18,6 +18,7 @@ void AGenerator::Setup()
 	CurrentInteractablePips = 0;	
 	
 	Super::Setup();
+	InvokeSpecificMechanic();
 }
 
 

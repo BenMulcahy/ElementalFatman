@@ -23,6 +23,7 @@ void AWater::Setup()
 	if (EndLocation == FVector::Zero()) EndLocation = Mesh->GetRelativeLocation();
 
 	Super::Setup();
+	InvokeSpecificMechanic();
 }
 
 void AWater::InvokeSpecificMechanic()

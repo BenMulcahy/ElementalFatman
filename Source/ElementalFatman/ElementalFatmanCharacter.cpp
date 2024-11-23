@@ -63,20 +63,20 @@ void AElementalFatmanCharacter::Tick(float DeltaTime)
 
 	//////////////////////////////////////////////////////////////////// mantling debug lines
 
-	// debug line checking mantleable object at foot level
-	FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
-	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
+	//// debug line checking mantleable object at foot level
+	//FVector TracePoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, Collider->GetComponentLocation().Z - GetDefaultHalfHeight());
+	//CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
 
-	// debug line checking mantleable object at eye level
-	TracePoint.Z += SearchMantleEyeLevel;
-	CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
-	
-	// debug line checking object is not too tall to mantle
-	CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)), Collider->GetForwardVector(), MantleWidthLimit, 1);
-	
-	// debug line checking object is not too thin to mantle
-	FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)) + (Collider->GetForwardVector() * MantleWidthLimit);
-	CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2);
+	//// debug line checking mantleable object at eye level
+	//TracePoint.Z += SearchMantleEyeLevel;
+	//CheckMantle(TracePoint, Collider->GetForwardVector(), DistanceToTriggerMantling, 0);
+	//
+	//// debug line checking object is not too tall to mantle
+	//CheckMantle(FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)), Collider->GetForwardVector(), MantleWidthLimit, 1);
+	//
+	//// debug line checking object is not too thin to mantle
+	//FVector TraceDownPoint = FVector(Collider->GetComponentLocation().X, Collider->GetComponentLocation().Y, (Collider->GetComponentLocation().Z - GetDefaultHalfHeight() + MantleHeightLimit)) + (Collider->GetForwardVector() * MantleWidthLimit);
+	//CheckMantle(TraceDownPoint, -(Collider->GetUpVector()), 1000, 2);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -370,8 +370,6 @@ bool AElementalFatmanCharacter::CheckCrosshairOverInteractable(bool interacting)
 	FVector startPos = FirstPersonCameraComponent->GetComponentLocation();
 	FVector dir = FirstPersonCameraComponent->GetForwardVector();
 	FVector endPos = startPos + (dir * AbilityRange);
-
-	DrawDebugLine(GetWorld(), startPos, endPos, FColor::Magenta, false);
 
 
 	// line trace, either find a heatinteractable actor or set the currently focused actor to null
