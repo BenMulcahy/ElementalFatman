@@ -12,7 +12,7 @@ void AWoodenBarricade::Setup()
 		// construct mesh here
 	}
 
-	ObjectType = EObjectType::OT_Barricade;
+	ObjectType = EObjectType::OT_Wood_Barricade;
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up barricade"));
 

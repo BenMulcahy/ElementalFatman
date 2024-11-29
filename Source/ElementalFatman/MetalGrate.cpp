@@ -12,7 +12,7 @@ void AMetalGrate::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up metal grate"));
 
-	ObjectType = EObjectType::OT_Grate;
+	ObjectType = EObjectType::OT_Metal_Grate;
 
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = 1;

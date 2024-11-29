@@ -26,7 +26,7 @@ AHeatInteractable::AHeatInteractable()
 	UIWidget->SetDrawSize(FVector2D(150, 150));
 	UIWidget->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 
-	ObjectType = EObjectType::OT_HeatSource;
+	ObjectType = EObjectType::OT_Heat_Source;
 
 	// when creating a new heat interactable bp, go to the bp editor and please:
 	// assign a mesh (e.g. cube)
@@ -61,9 +61,7 @@ void AHeatInteractable::Tick(float DeltaSeconds)
 	//	}
 	//}
 
-#if WITH_EDITOR
 	UpdateUI();
-#endif
 }
 
 void AHeatInteractable::Setup() 

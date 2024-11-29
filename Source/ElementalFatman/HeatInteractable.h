@@ -13,20 +13,20 @@
 UENUM()
 enum class EObjectType : uint8
 {
-	OT_HeatSource UMETA(DisplayName = "HeatSource"),
+	OT_Heat_Source UMETA(DisplayName = "HeatSource"),
 	OT_Water UMETA(DisplayName = "Water"),
-	OT_Barricade UMETA(DisplayName = "Barricade"),
+	OT_Wood_Barricade UMETA(DisplayName = "Barricade"),
 	OT_Generator UMETA(DisplayName = "Generator"),
 	OT_Fan UMETA(DisplayName = "Fan"),
 	OT_Lava UMETA(DisplayName = "Lava"),
-	OT_Mechanism UMETA(DisplayName = "Moving Mechanism"),
-	OT_Pressure UMETA(DisplayName = "Pressure Plate"),
+	OT_Moving_Mechanism UMETA(DisplayName = "Moving Mechanism"),
+	OT_Pressure_Plate UMETA(DisplayName = "Pressure Plate"),
 	OT_Barrel UMETA(DisplayName = "Expandable Barrel"),
 	OT_Goo UMETA(DisplayName = "Goo"),
-	OT_Box UMETA(DisplayName = "Movable Box"),
+	OT_Movable_Box UMETA(DisplayName = "Movable Box"),
 	OT_Torch UMETA(DisplayName = "Torch"),
 	OT_Lamp UMETA(DisplayName = "Lamp"),
-	OT_Grate UMETA(DisplayName = "Metal Grate"),
+	OT_Metal_Grate UMETA(DisplayName = "Metal Grate"),
 	OT_Clock UMETA(DisplayName = "Clock"),
 	OT_Switch UMETA(DisplayName = "Switch"),
 };

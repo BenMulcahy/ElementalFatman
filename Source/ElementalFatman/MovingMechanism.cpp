@@ -12,7 +12,7 @@ void AMovingMechanism::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up moving mechanism"));
 
-	ObjectType = EObjectType::OT_Mechanism;
+	ObjectType = EObjectType::OT_Moving_Mechanism;
 
 	MaxInteractablePips = 1;
 	CurrentInteractablePips = StartOn ? 1 : 0;

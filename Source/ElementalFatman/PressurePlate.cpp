@@ -21,7 +21,7 @@ void APressurePlate::Setup()
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up pressure plate"));
 
-	ObjectType = EObjectType::OT_Pressure;
+	ObjectType = EObjectType::OT_Pressure_Plate;
 
 	MaxInteractablePips = 0;
 	CurrentInteractablePips = 0;

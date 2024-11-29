@@ -11,7 +11,7 @@ void AHeatSource::Setup()
 		// construct mesh here
 	}
 
-	ObjectType = EObjectType::OT_HeatSource;
+	ObjectType = EObjectType::OT_Heat_Source;
 
 	UE_LOG(LogInteraction, Warning, TEXT("setting up heat source"));
 

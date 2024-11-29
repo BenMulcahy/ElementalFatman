@@ -12,6 +12,7 @@
 #include "PressurePlate.h"
 #include "MovingMechanism.h"
 #include "Clock.h"
+#include "Components/LineBatchComponent.h"
 #include "PowerSystem.generated.h"
 
 UENUM()
@@ -161,4 +162,6 @@ protected:
 	TArray<int8> RequiredFreezerStates;
 
 	bool PowerStateFrozen = false;
+
+	ULineBatchComponent* LineDrawer;
 };

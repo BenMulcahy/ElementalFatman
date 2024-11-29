@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool StartFrozen = false;
 
+	UPROPERTY(EditAnywhere)
+	float FrozenMass = 1000;
+
+	UPROPERTY(EditAnywhere)
+	float UnfrozenMass = 5000;
+
 	UPROPERTY(EditAnywhere, Category = "Mechanics | Breaking Grates")
 	bool CanBreakGrates = true;
 

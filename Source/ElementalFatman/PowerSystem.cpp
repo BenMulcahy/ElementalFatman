@@ -9,6 +9,8 @@ APowerSystem::APowerSystem()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	LineDrawer = CreateDefaultSubobject<ULineBatchComponent>(TEXT("Line Drawer"));
 }
 
 // Called when the game starts or when spawned
@@ -33,8 +35,16 @@ void APowerSystem::Tick(const float DeltaSeconds)
 
 		for (int j = 0; j < PowerReceivers.Num(); j++)
 		{
-			if (PoweredOn) DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, false);
-			else if (ShowDebugLine) DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, false);
+			if (PoweredOn) 
+			{
+				LineDrawer->DrawLine(PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, 0, 1, 0.1f, 0);
+				//DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, false);
+			}
+			else if (ShowDebugLine) 
+			{
+				LineDrawer->DrawLine(PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, 0, 1, 0.1f, 0);
+				//DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, false);
+			}
 		}
 	}
 
@@ -45,8 +55,16 @@ void APowerSystem::Tick(const float DeltaSeconds)
 
 		for (int j = 0; j < PowerReceivers.Num(); j++)
 		{
-			if (PoweredOn) DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, false);
-			else if (ShowDebugLine) DrawDebugLine(GetWorld(), PowerSuppliers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, false);
+			if (PowerFrozen)
+			{
+				LineDrawer->DrawLine(PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, 0, 1, 0.1f, 0);
+				//DrawDebugLine(GetWorld(), PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Green, false);
+			}
+			else if (ShowDebugLine) 
+			{
+				LineDrawer->DrawLine(PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, 0, 1, 0.1f, 0);
+				//DrawDebugLine(GetWorld(), PowerFreezers[i]->PowerSupply->GetActorLocation(), PowerReceivers[j]->GetActorLocation(), FColor::Red, false);
+			}
 		}
 	}
 }

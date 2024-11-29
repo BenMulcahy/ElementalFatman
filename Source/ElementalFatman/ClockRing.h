@@ -18,7 +18,7 @@ struct FSwitchInstance
 
 	// The angle this fan will turn the ring each time it is heated/cooled (degrees).
 	UPROPERTY(EditAnywhere, meta = (Units = "Degrees", Delta = 5))
-	float TurnAngle;
+	float TurnAngle = 0;
 
 	// Reverse the direction this ring will turn when the fan is spun (e.g. spinning the fan clockwise turns the ring anticlockwise).
 	UPROPERTY(EditAnywhere)
