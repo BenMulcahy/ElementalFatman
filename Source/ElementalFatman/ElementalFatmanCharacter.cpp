@@ -51,6 +51,7 @@ void AElementalFatmanCharacter::BeginPlay()
 	CustomGameModeInstance = Cast<AElementalFatmanGameMode>(GetWorld()->GetAuthGameMode());
 
 	HUD = GetWorld()->GetFirstPlayerController()->GetHUD();
+	PlayerController = GetWorld()->GetFirstPlayerController();
 }
 
 void AElementalFatmanCharacter::Tick(float DeltaTime)
@@ -60,6 +61,8 @@ void AElementalFatmanCharacter::Tick(float DeltaTime)
 	// check if character is moving faster than a speed threshold -- if so, add the "Fast" tag so that the character can break through metal grates
 	if (GetVelocity().Size() >= GrateBreakSpeed) { if (!Tags.Contains("Fast")) Tags.Add("Fast"); }
 	else { if (Tags.Contains("Fast")) Tags.Remove("Fast"); }
+
+	UpdateMovementBob();
 
 	//////////////////////////////////////////////////////////////////// mantling debug lines
 
@@ -153,7 +156,7 @@ void AElementalFatmanCharacter::Look(const FInputActionValue& Value)
 
 void AElementalFatmanCharacter::Restart(const FInputActionValue& Value) 
 {
-	GetWorld()->GetFirstPlayerController()->RestartLevel();
+	PlayerController->RestartLevel();
 }
 
 
@@ -446,3 +449,47 @@ FLinearColor AElementalFatmanCharacter::UpdateCrosshairColor()
 
 #pragma endregion
 
+void AElementalFatmanCharacter::UpdateMovementBob() 
+{
+	TSubclassOf<UCameraShakeBase> NewCameraBob = IdleBob;
+
+	if (GetCharacterMovement()->Velocity.Size() > 0)
+	{
+		if (!GetCharacterMovement()->IsMovingOnGround()) 
+		{
+			NewCameraBob = FallingBob; 
+			UE_LOG(LogTemp, Warning, TEXT("falling"));
+		}
+		// else if in landing sequence (will turn off movement and stuff for a sec anyway), landingbob
+		else if (GetCharacterMovement()->GetMaxSpeed() == SprintSpeed) 
+		{
+			UE_LOG(LogTemp, Warning, TEXT("sprinting"));
+			NewCameraBob = SprintingBob;
+		}
+		else 
+		{ 
+			UE_LOG(LogTemp, Warning, TEXT("walking"));
+			NewCameraBob = WalkingBob; 
+		}
+	}
+	else 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("idle"));
+		NewCameraBob = IdleBob;
+	}
+
+	if (NewCameraBob != PrevCameraBob) StartCameraShake(NewCameraBob);
+	PrevCameraBob = NewCameraBob;
+}
+
+bool AElementalFatmanCharacter::LayerInteractionBob() 
+{
+	if (CurrentInteraction != EInteractionType::null) return true;
+	else return false;
+}
+
+void AElementalFatmanCharacter::StartCameraShake(TSubclassOf<UCameraShakeBase> NewCameraBob) 
+{
+	PlayerController->ClientStartCameraShake(NewCameraBob);
+	if (LayerInteractionBob()) PlayerController->ClientStartCameraShake(InteractBob);
+}

@@ -27,6 +27,17 @@ enum class EInteractionType : uint8
 	IT_Cooling UMETA(DisplayName = "Cooling Interaction"),
 };
 
+UENUM()
+enum class EMovementAnimation : uint8 
+{
+	Idling,
+	Walking,
+	Sprinting,
+	Airborne,
+	Landing,
+	Interacting,	
+};
+
 UCLASS(config=Game)
 class AElementalFatmanCharacter : public ACharacter
 {
@@ -66,6 +77,8 @@ class AElementalFatmanCharacter : public ACharacter
 	UInputAction* RestartAction;
 
 	EInteractionType CurrentInteraction;
+
+	APlayerController* PlayerController;
 
 
 public:
@@ -193,6 +206,14 @@ protected:
 
 	void CompleteInteraction();
 
+	TSubclassOf<UCameraShakeBase> PrevCameraBob;
+
+	void UpdateMovementBob();
+
+	bool LayerInteractionBob();
+
+	void StartCameraShake(TSubclassOf<UCameraShakeBase> NewCameraBob);
+
 	UFUNCTION(BlueprintCallable)
 	FLinearColor UpdateCrosshairColor();
 
@@ -200,10 +221,32 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> IdleBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> WalkingBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> SprintingBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> FallingBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> LandBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> MantleBob;
+
+	UPROPERTY(EditAnywhere, Category = "Mechanics | Camera Bob")
+	TSubclassOf<UCameraShakeBase> InteractBob;
+
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
 };
 
