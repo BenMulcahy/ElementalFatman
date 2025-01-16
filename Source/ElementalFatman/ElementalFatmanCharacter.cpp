@@ -331,6 +331,7 @@ void AElementalFatmanCharacter::Interact(const FInputActionValue& Value)
 		UpdateInteraction(CurrentInteraction);
 	}
 
+	LayerInteractionBob();
 	//if (GEngine && CurrentInteraction != EInteractionType::null) GEngine->AddOnScreenDebugMessage(-1, 0.01f, CurrentInteraction == EInteractionType::IT_Heating ? FColor::Red : FColor::Blue, FString::Printf(TEXT("%s"), CurrentInteraction == EInteractionType::IT_Heating ? TEXT("Heating") : TEXT("Cooling")));
 }
 
@@ -338,6 +339,7 @@ void AElementalFatmanCharacter::Interact(const FInputActionValue& Value)
 void AElementalFatmanCharacter::CancelInteract(const FInputActionValue& Value)
 {
 	UpdateInteraction(EInteractionType::null);
+	LayerInteractionBob();
 }
 
 void AElementalFatmanCharacter::UpdateInteraction(EInteractionType interaction)
@@ -458,23 +460,23 @@ void AElementalFatmanCharacter::UpdateMovementBob()
 		if (!GetCharacterMovement()->IsMovingOnGround()) 
 		{
 			NewCameraBob = FallingBob; 
-			UE_LOG(LogTemp, Warning, TEXT("falling"));
+			//UE_LOG(LogTemp, Warning, TEXT("falling"));
 		}
 		// else if in landing sequence (will turn off movement and stuff for a sec anyway), landingbob
 		else if (GetCharacterMovement()->GetMaxSpeed() == SprintSpeed) 
 		{
-			UE_LOG(LogTemp, Warning, TEXT("sprinting"));
+			//UE_LOG(LogTemp, Warning, TEXT("sprinting"));
 			NewCameraBob = SprintingBob;
 		}
 		else 
 		{ 
-			UE_LOG(LogTemp, Warning, TEXT("walking"));
+			//UE_LOG(LogTemp, Warning, TEXT("walking"));
 			NewCameraBob = WalkingBob; 
 		}
 	}
 	else 
 	{
-		UE_LOG(LogTemp, Warning, TEXT("idle"));
+		//UE_LOG(LogTemp, Warning, TEXT("idle"));
 		NewCameraBob = IdleBob;
 	}
 
@@ -482,14 +484,14 @@ void AElementalFatmanCharacter::UpdateMovementBob()
 	PrevCameraBob = NewCameraBob;
 }
 
-bool AElementalFatmanCharacter::LayerInteractionBob() 
+void AElementalFatmanCharacter::LayerInteractionBob() 
 {
-	if (CurrentInteraction != EInteractionType::null) return true;
-	else return false;
+	if (CurrentInteraction != EInteractionType::null) PlayerController->ClientStartCameraShake(InteractBob);
+	else PlayerController->ClientStopCameraShake(InteractBob);
 }
 
-void AElementalFatmanCharacter::StartCameraShake(TSubclassOf<UCameraShakeBase> NewCameraBob) 
+void AElementalFatmanCharacter::StartCameraShake(TSubclassOf<UCameraShakeBase> NewCameraBob)
 {
+	PlayerController->ClientStopCameraShake(PrevCameraBob);
 	PlayerController->ClientStartCameraShake(NewCameraBob);
-	if (LayerInteractionBob()) PlayerController->ClientStartCameraShake(InteractBob);
 }

@@ -208,9 +208,11 @@ protected:
 
 	TSubclassOf<UCameraShakeBase> PrevCameraBob;
 
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode);
+
 	void UpdateMovementBob();
 
-	bool LayerInteractionBob();
+	void LayerInteractionBob();
 
 	void StartCameraShake(TSubclassOf<UCameraShakeBase> NewCameraBob);
 
